@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
-  "homepage": "https://Abelo-123.github.io/abiyback34",
+  "homepage": "https://Abelo-123.github.io/abiyadmin",
   "scripts": {
     "deploy": "gh-pages -d dist",
     "dev": "cmd /c \"start /B php -S localhost:3002 server/index.php\" && vite",
