@@ -5,7 +5,6 @@ import { OrdersPage } from './pages/admin/OrdersPage';
 import { DepositsPage } from './pages/admin/DepositsPage';
 import { SettingsPage } from './pages/admin/SettingsPage';
 import { ServicesPage } from './pages/admin/ServicesPage';
-import { ChatPage } from './pages/admin/ChatPage';
 import { WithdrawalsPage } from './pages/admin/WithdrawalsPage';
 import { FinancePage } from './pages/admin/FinancePage';
 import { BroadcastPage } from './pages/admin/BroadcastPage';
@@ -177,13 +176,12 @@ export const AdminContext = createContext<AdminContextType>({
 export const useAdmin = () => useContext(AdminContext);
 
 // ─── Page Type ─────────────────────────────────────────────────
-type Page = 'dashboard' | 'finance' | 'users' | 'orders' | 'deposits' | 'settings' | 'services' | 'chat' | 'withdrawals' | 'broadcast' | 'account';
+type Page = 'dashboard' | 'finance' | 'users' | 'orders' | 'deposits' | 'settings' | 'services' | 'withdrawals' | 'broadcast' | 'account';
 
 const NAV_ITEMS: { id: Page; label: string; icon: string }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: '📊' },
   { id: 'finance', label: 'Finance', icon: '💵' },
   { id: 'users', label: 'Users', icon: '👥' },
-  { id: 'chat', label: 'Support Chat', icon: '💬' },
   { id: 'orders', label: 'Orders', icon: '📦' },
   { id: 'deposits', label: 'Deposits', icon: '💰' },
   { id: 'withdrawals', label: 'Withdrawals', icon: '💸' },
@@ -196,7 +194,6 @@ const PAGE_TITLES: Record<Page, string> = {
   dashboard: 'Dashboard',
   finance: 'Financial Overview',
   users: 'User Management',
-  chat: 'Support Chat',
   orders: 'Order History',
   deposits: 'Deposit History',
   withdrawals: 'Withdrawals',
@@ -237,7 +234,6 @@ export function AdminApp() {
       case 'dashboard': return <DashboardPage />;
       case 'finance': return <FinancePage />;
       case 'users': return <UsersPage />;
-      case 'chat': return <ChatPage />;
       case 'orders': return <OrdersPage />;
       case 'deposits': return <DepositsPage />;
       case 'withdrawals': return <WithdrawalsPage />;
@@ -268,7 +264,7 @@ export function AdminApp() {
 
           <nav className="sidebar__nav" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100% - 70px)' }}>
             <div className="sidebar__section-label">Main</div>
-            {NAV_ITEMS.slice(0, 5).map(item => (
+            {NAV_ITEMS.slice(0, 4).map(item => (
               <div
                 key={item.id}
                 className={`sidebar__link ${currentPage === item.id ? 'sidebar__link--active' : ''}`}
@@ -279,7 +275,7 @@ export function AdminApp() {
               </div>
             ))}
             <div className="sidebar__section-label">Configuration</div>
-            {NAV_ITEMS.slice(5).map(item => (
+            {NAV_ITEMS.slice(4).map(item => (
               <div
                 key={item.id}
                 className={`sidebar__link ${currentPage === item.id ? 'sidebar__link--active' : ''}`}

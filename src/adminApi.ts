@@ -279,38 +279,7 @@ export async function getServiceActivity(): Promise<ServiceActivity[]> {
 export async function getDisabledServices(): Promise<ServiceActivity[]> {
   return adminFetch<ServiceActivity[]>('/admin/services/disabled');
 }
-// ─── Chat ─────────────────────────────────────────────────────────
 
-export interface ChatSession {
-  user_id: string;
-  username: string;
-  first_name: string;
-  last_message_at: string;
-  unread_count?: number;
-}
-
-export interface AdminChatMessage {
-  id: number;
-  user_id: string;
-  message: string;
-  is_admin: boolean;
-  created_at: string;
-}
-
-export async function getChatSessions(): Promise<ChatSession[]> {
-  return adminFetch<ChatSession[]>('/admin/chat/sessions');
-}
-
-export async function getChatMessages(userId: string): Promise<AdminChatMessage[]> {
-  return adminFetch<AdminChatMessage[]>(`/admin/chat/${userId}`);
-}
-
-export async function sendChatMessage(userId: string, message: string): Promise<{ success: boolean }> {
-  return adminFetch<{ success: boolean }>(`/admin/chat/${userId}`, {
-    method: 'POST',
-    body: JSON.stringify({ message }),
-  });
-}
 
 // ─── Withdrawals ──────────────────────────────────────────────────
 
