@@ -185,6 +185,9 @@ export async function getDeposits(page = 1, search = '', status = ''): Promise<{
 
 export interface AdminSettings {
   rate_multiplier: string;
+  min_rate_multiplier?: string;
+  reseller_balance?: string;
+  total_deposit?: string;
   discount_percent: string;
   holiday_name: string;
   maintenance_mode: string;
@@ -201,6 +204,39 @@ export async function updateSetting(key: string, value: string): Promise<{ succe
   return adminFetch('/admin/settings', {
     method: 'POST',
     body: JSON.stringify({ key, value }),
+  });
+}
+
+// ─── Reseller Operations ────────────────────────────────────────
+
+export interface ResellerStatus {
+  success: boolean;
+  reseller_balance: number;
+  total_deposit: number;
+  min_rate_multiplier: number;
+  rate_multiplier: number;
+}
+
+export async function getResellerStatus(): Promise<ResellerStatus> {
+  return adminFetch<ResellerStatus>('/admin/reseller/status');
+}
+
+export async function addResellerBalance(amount: number): Promise<{ success: boolean; new_balance: number }> {
+  return adminFetch('/admin/reseller/add-balance', {
+    method: 'POST',
+    body: JSON.stringify({ amount }),
+  });
+}
+
+export async function withdrawTotalDeposit(
+  amount: number,
+  bank_name: string,
+  account_number: string,
+  account_name?: string
+): Promise<{ success: boolean; new_total_deposit: number }> {
+  return adminFetch('/admin/reseller/withdraw-deposit', {
+    method: 'POST',
+    body: JSON.stringify({ amount, bank_name, account_number, account_name }),
   });
 }
 

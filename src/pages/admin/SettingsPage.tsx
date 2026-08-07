@@ -53,11 +53,19 @@ export function SettingsPage() {
 
         <SettingRow
           label="Rate Multiplier (USD → ETB)"
-          description="Service prices from GodOfPanel are in USD. This multiplier converts them to ETB. E.g. 55 means $1 = 55 ETB."
+          description={`Service prices from GodOfPanel are in USD. Converted to ETB by this multiplier. (Minimum allowed by Main Admin: ${settings.min_rate_multiplier || '55'})`}
           type="number"
           value={settings.rate_multiplier}
+          min={settings.min_rate_multiplier ? parseFloat(settings.min_rate_multiplier) : undefined}
           saving={saving === 'rate_multiplier'}
-          onSave={(val) => save('rate_multiplier', val)}
+          onSave={(val) => {
+            const minAllowed = settings.min_rate_multiplier ? parseFloat(settings.min_rate_multiplier) : 0;
+            if (parseFloat(val) < minAllowed) {
+              showToast('error', `Multiplier cannot be set lower than the minimum multiplicity baseline (${minAllowed}) set by main admin (joadmin).`);
+              return;
+            }
+            save('rate_multiplier', val);
+          }}
         />
 
         <SettingRow
