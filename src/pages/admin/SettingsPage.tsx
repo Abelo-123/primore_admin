@@ -185,101 +185,102 @@ export function SettingsPage() {
       </div>
 
       <div className="settings-grid">
-      {/* Pricing Settings */}
-      <div className="settings-card">
-        <h3 className="settings-card__title">💱 Pricing Configuration</h3>
+        {/* Pricing Settings */}
+        <div className="settings-card">
+          <h3 className="settings-card__title">💱 Pricing Configuration</h3>
 
-        <SettingRow
-          label="Rate Multiplier (USD → ETB)"
-          description={`Service prices from GodOfPanel are in USD. Converted to ETB by this multiplier. (Minimum allowed by Main Admin: ${settings.min_rate_multiplier || '55'})`}
-          type="number"
-          value={settings.rate_multiplier}
-          min={settings.min_rate_multiplier ? parseFloat(settings.min_rate_multiplier) : undefined}
-          saving={saving === 'rate_multiplier'}
-          onSave={(val) => {
-            const minAllowed = settings.min_rate_multiplier ? parseFloat(settings.min_rate_multiplier) : 0;
-            if (parseFloat(val) < minAllowed) {
-              showToast('error', `Multiplier cannot be set lower than the minimum multiplicity baseline (${minAllowed}) set by main admin (joadmin).`);
-              return;
-            }
-            save('rate_multiplier', val);
-          }}
-        />
+          <SettingRow
+            label="Rate Multiplier (USD → ETB)"
+            description={`Service prices from GodOfPanel are in USD. Converted to ETB by this multiplier. (Minimum allowed by Main Admin: ${settings.min_rate_multiplier || '55'})`}
+            type="number"
+            value={settings.rate_multiplier}
+            min={settings.min_rate_multiplier ? parseFloat(settings.min_rate_multiplier) : undefined}
+            saving={saving === 'rate_multiplier'}
+            onSave={(val) => {
+              const minAllowed = settings.min_rate_multiplier ? parseFloat(settings.min_rate_multiplier) : 0;
+              if (parseFloat(val) < minAllowed) {
+                showToast('error', `Multiplier cannot be set lower than the minimum multiplicity baseline (${minAllowed}) set by main admin (joadmin).`);
+                return;
+              }
+              save('rate_multiplier', val);
+            }}
+          />
 
-        <SettingRow
-          label="Discount Percent"
-          description="Global discount percentage applied to all orders. Set to 0 to disable."
-          type="number"
-          value={settings.discount_percent}
-          saving={saving === 'discount_percent'}
-          onSave={(val) => save('discount_percent', val)}
-        />
+          <SettingRow
+            label="Discount Percent"
+            description="Global discount percentage applied to all orders. Set to 0 to disable."
+            type="number"
+            value={settings.discount_percent}
+            saving={saving === 'discount_percent'}
+            onSave={(val) => save('discount_percent', val)}
+          />
 
-        <SettingRow
-          label="Holiday / Promo Name"
-          description="Display name for the current discount event. Shown in the app marquee."
-          type="text"
-          value={settings.holiday_name}
-          saving={saving === 'holiday_name'}
-          onSave={(val) => save('holiday_name', val)}
-        />
-      </div>
+          <SettingRow
+            label="Holiday / Promo Name"
+            description="Display name for the current discount event. Shown in the app marquee."
+            type="text"
+            value={settings.holiday_name}
+            saving={saving === 'holiday_name'}
+            onSave={(val) => save('holiday_name', val)}
+          />
+        </div>
 
-      {/* App Control */}
-      <div className="settings-card">
-        <h3 className="settings-card__title">🎛️ App Control</h3>
+        {/* App Control */}
+        <div className="settings-card">
+          <h3 className="settings-card__title">🎛️ App Control</h3>
 
-        <SettingToggle
-          label="Maintenance Mode"
-          description="When enabled, users will see a maintenance message and cannot access the app."
-          checked={settings.maintenance_mode === '1' || settings.maintenance_mode === 'true'}
-          saving={saving === 'maintenance_mode'}
-          onToggle={(val) => save('maintenance_mode', val ? '1' : '0')}
-        />
+          <SettingToggle
+            label="Maintenance Mode"
+            description="When enabled, users will see a maintenance message and cannot access the app."
+            checked={settings.maintenance_mode === '1' || settings.maintenance_mode === 'true'}
+            saving={saving === 'maintenance_mode'}
+            onToggle={(val) => save('maintenance_mode', val ? '1' : '0')}
+          />
 
-        <SettingToggle
-          label="Users Can Order"
-          description="When disabled, all order placement is blocked."
-          checked={settings.user_can_order === '1' || settings.user_can_order === 'true'}
-          saving={saving === 'user_can_order'}
-          onToggle={(val) => save('user_can_order', val ? '1' : '0')}
-        />
+          <SettingToggle
+            label="Users Can Order"
+            description="When disabled, all order placement is blocked."
+            checked={settings.user_can_order === '1' || settings.user_can_order === 'true'}
+            saving={saving === 'user_can_order'}
+            onToggle={(val) => save('user_can_order', val ? '1' : '0')}
+          />
 
-        <SettingRow
-          label="Marquee Text"
-          description="Scrolling text shown at the top of the app. Use this for announcements."
-          type="text"
-          value={settings.marquee_text}
-          saving={saving === 'marquee_text'}
-          onSave={(val) => save('marquee_text', val)}
-        />
+          <SettingRow
+            label="Marquee Text"
+            description="Scrolling text shown at the top of the app. Use this for announcements."
+            type="text"
+            value={settings.marquee_text}
+            saving={saving === 'marquee_text'}
+            onSave={(val) => save('marquee_text', val)}
+          />
 
-        <SettingRow
-          label="Top Services IDs"
-          description="Comma-separated service IDs for the 'Top Services' section (e.g., 102, 10, 50, 45). These will be shown in the exact order specified."
-          type="text"
-          value={settings.top_services_ids}
-          saving={saving === 'top_services_ids'}
-          onSave={(val) => save('top_services_ids', val)}
-        />
-      </div>
+          <SettingRow
+            label="Top Services IDs"
+            description="Comma-separated service IDs for the 'Top Services' section (e.g., 102, 10, 50, 45). These will be shown in the exact order specified."
+            type="text"
+            value={settings.top_services_ids}
+            saving={saving === 'top_services_ids'}
+            onSave={(val) => save('top_services_ids', val)}
+          />
+        </div>
 
-      {/* Security Settings */}
-      <div className="settings-card">
-        <h3 className="settings-card__title">🔒 Security Configuration</h3>
+        {/* Security Settings */}
+        <div className="settings-card">
+          <h3 className="settings-card__title">🔒 Security Configuration</h3>
 
-        <SettingRow
-          label="Change Admin Password"
-          description="Change the password used to log in for this Bot Token. Ensure you remember the new password."
-          type="text"
-          value="••••••••"
-          saving={saving === 'admin_password'}
-          onSave={(val) => {
-            if (val.trim() && val !== '••••••••') {
-              save('admin_password', val.trim());
-            }
-          }}
-        />
+          <SettingRow
+            label="Change Admin Password"
+            description="Change the password used to log in for this Bot Token. Ensure you remember the new password."
+            type="text"
+            value="••••••••"
+            saving={saving === 'admin_password'}
+            onSave={(val) => {
+              if (val.trim() && val !== '••••••••') {
+                save('admin_password', val.trim());
+              }
+            }}
+          />
+        </div>
       </div>
 
       {/* ─── Add Balance Modal ─── */}
@@ -403,11 +404,12 @@ export function SettingsPage() {
 }
 
 // ─── Setting Row with inline edit ───────────────────────────────
-function SettingRow({ label, description, type, value, saving, onSave }: {
+function SettingRow({ label, description, type, value, min, saving, onSave }: {
   label: string;
   description: string;
   type: 'text' | 'number';
   value: string;
+  min?: number;
   saving: boolean;
   onSave: (val: string) => void;
 }) {
@@ -433,6 +435,7 @@ function SettingRow({ label, description, type, value, saving, onSave }: {
             <input
               className="form-input"
               type={type}
+              min={min}
               value={draft}
               onChange={e => setDraft(e.target.value)}
               style={{ width: 150, padding: '6px 10px', fontSize: 13 }}
