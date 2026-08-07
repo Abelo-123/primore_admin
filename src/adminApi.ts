@@ -443,33 +443,5 @@ export async function deleteSingleBroadcastMessage(msgId: number): Promise<{ suc
   });
 }
 
-// ─── Reseller Operations ─────────────────────────────────────────
-
-export interface ResellerStatus {
-  success: boolean;
-  reseller_balance: number;
-  total_deposit: number;
-  min_rate_multiplier: number;
-  rate_multiplier: number;
-}
-
-export async function getResellerStatus(): Promise<ResellerStatus> {
-  return adminFetch<ResellerStatus>('/admin/reseller/status');
-}
-
-export async function addResellerBalance(amount: number): Promise<{ success: boolean; new_balance: number }> {
-  return adminFetch('/admin/reseller/add-balance', {
-    method: 'POST',
-    body: JSON.stringify({ amount }),
-  });
-}
-
-export async function withdrawTotalDeposit(amount: number, bank_name: string, account_number: string, account_name?: string): Promise<{ success: boolean; new_total_deposit: number }> {
-  return adminFetch('/admin/reseller/withdraw-deposit', {
-    method: 'POST',
-    body: JSON.stringify({ amount, bank_name, account_number, account_name }),
-  });
-}
-
 
 
