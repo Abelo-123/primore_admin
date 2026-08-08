@@ -184,8 +184,12 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
     try {
       const tg = (window as any).Telegram?.WebApp;
       
-      // Build return URL: Chapa will redirect back here after payment (for standard browser fallback)
-      const returnUrl = window.location.origin + window.location.pathname + '?deposit=reseller';
+      // Build return URL dynamically: close-popup.html for Telegram native close, query param for standard browser fallback
+      let returnUrl = window.location.origin + '/close-popup.html?bot=adminprimora444';
+      if (!tg) {
+        returnUrl = window.location.origin + window.location.pathname + '?deposit=reseller';
+      }
+      
       const res = await initResellerDeposit(parseFloat(amount), returnUrl);
       
       if (res.success && res.checkout_url && res.tx_ref) {
