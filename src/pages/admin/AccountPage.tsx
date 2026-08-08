@@ -173,10 +173,12 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
         window.open(res.checkout_url, '_blank');
         startPollingVerification(res.tx_ref);
       } else {
-        showToast('error', res.error || 'Failed to initialize payment');
+        showToast('error', res.error || (res ? `Response: ${JSON.stringify(res)}` : 'Failed to initialize payment'));
       }
     } catch (err: any) {
-      showToast('error', err.message || 'Failed to initialize payment');
+      console.error('[AddBalance] Init error:', err);
+      const msg = err?.message || (typeof err === 'string' ? err : JSON.stringify(err));
+      showToast('error', `Error: ${msg}`);
     } finally {
       setLoading(false);
     }
