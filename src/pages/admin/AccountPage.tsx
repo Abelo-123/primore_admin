@@ -171,8 +171,13 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
     if (!amount || parseFloat(amount) <= 0) return;
     setLoading(true);
 
-    // Pre-open window synchronously to bypass popup blocker
-    const paymentWindow = window.open('about:blank', '_blank');
+    const tg = (window as any).Telegram?.WebApp;
+    let paymentWindow: Window | null = null;
+
+    if (!tg) {
+      // Pre-open window synchronously to bypass popup blocker only in standard browser
+      paymentWindow = window.open('about:blank', '_blank');
+    }
 
     try {
       const res = await initResellerDeposit(parseFloat(amount));
@@ -180,11 +185,14 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
         setCheckoutUrl(res.checkout_url);
         setTxRef(res.tx_ref);
 
-        if (paymentWindow) {
-          paymentWindow.location.href = res.checkout_url;
+        if (tg) {
+          tg.openLink(res.checkout_url);
         } else {
-          // Fallback
-          window.open(res.checkout_url, '_blank');
+          if (paymentWindow) {
+            paymentWindow.location.href = res.checkout_url;
+          } else {
+            window.open(res.checkout_url, '_blank');
+          }
         }
 
         startPollingVerification(res.tx_ref);
@@ -293,7 +301,14 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
           </div>
 
           <button
-            onClick={() => window.open(checkoutUrl, '_blank')}
+            onClick={() => {
+              const tg = (window as any).Telegram?.WebApp;
+              if (tg) {
+                tg.openLink(checkoutUrl);
+              } else {
+                window.open(checkoutUrl, '_blank');
+              }
+            }}
             className="btn btn--secondary"
             style={{ width: '100%', marginBottom: 12, padding: '12px', borderRadius: 10, fontSize: 14 }}
           >
