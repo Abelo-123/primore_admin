@@ -46,12 +46,26 @@ async function adminFetch<T>(endpoint: string, options?: RequestInit): Promise<T
     throw new Error('Unauthorized');
   }
 
+  const text = await res.text();
+
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || `HTTP ${res.status}`);
+    let errMsg = text;
+    try {
+      const parsed = JSON.parse(text);
+      if (parsed.error || parsed.message) errMsg = parsed.error || parsed.message;
+    } catch {}
+    throw new Error(errMsg || `HTTP ${res.status}`);
   }
 
-  return res.json();
+  if (!text || !text.trim()) {
+    return {} as T;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (err) {
+    throw new Error('Backend endpoint returned invalid response. Ensure backend server is deployed.');
+  }
 }
 
 export async function changeAdminPassword(newPassword: string): Promise<{ success: boolean }> {
