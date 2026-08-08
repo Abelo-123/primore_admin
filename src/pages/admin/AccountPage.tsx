@@ -84,7 +84,12 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
   };
 
   useEffect(() => {
-    if (!open) {
+    if (open) {
+      // Diagnostic test route check
+      adminFetch<{ success: boolean; message: string }>('/admin/reseller/deposit/test-init')
+        .then(res => console.log('Diagnostic [test-init] success:', res))
+        .catch(err => console.error('Diagnostic [test-init] failed:', err));
+    } else {
       reset();
     }
     return () => {
