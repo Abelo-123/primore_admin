@@ -58,34 +58,120 @@ const labelStyle: React.CSSProperties = {
 // ─── Add Balance Modal ─────────────────────────────────────────────
 function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose: () => void; onSuccess: () => void }) {
   const { showToast } = useAdmin();
-  const [step, setStep] = useState<'form' | 'paying' | 'verifying' | 'done'>('form');
+  const [step, setStep] = useState<'form' | 'verifying' | 'done' | 'error'>('form');
   const [amount, setAmount] = useState('');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
   const [txRef, setTxRef] = useState('');
   const [loading, setLoading] = useState(false);
   const [checkoutUrl, setCheckoutUrl] = useState('');
+  const [timeLeft, setTimeLeft] = useState(45);
+  const [pollError, setPollError] = useState('');
 
-  const reset = () => { setStep('form'); setAmount(''); setName(''); setEmail(''); setTxRef(''); setCheckoutUrl(''); setLoading(false); };
+  const timerRef = useRef<any>(null);
+  const pollAbortRef = useRef(false);
+  const activeTxRefRef = useRef<string | null>(null);
+
+  const reset = () => {
+    setStep('form');
+    setAmount('');
+    setTxRef('');
+    setCheckoutUrl('');
+    setLoading(false);
+    setTimeLeft(45);
+    setPollError('');
+    pollAbortRef.current = false;
+    activeTxRefRef.current = null;
+    if (timerRef.current) clearInterval(timerRef.current);
+  };
+
+  useEffect(() => {
+    if (!open) {
+      reset();
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [open]);
+
+  // Polling logic inspired by aiby_client/src/pages/DepositPage/DepositPage.tsx
+  const startPollingVerification = async (ref: string) => {
+    activeTxRefRef.current = ref;
+    pollAbortRef.current = false;
+    setStep('verifying');
+    setTimeLeft(45);
+    setPollError('');
+
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    const delays = [
+      2000, 2000, 2000, 3000, 3000, // First 12s
+      4000, 4000, 5000, 5000, 5000, // Next 23s
+      8000, 8000, 10000, 10000,     // Slower polling
+    ];
+
+    for (let attempt = 0; attempt < delays.length; attempt++) {
+      if (pollAbortRef.current || activeTxRefRef.current !== ref) {
+        if (timerRef.current) clearInterval(timerRef.current);
+        return;
+      }
+
+      await new Promise(resolve => setTimeout(resolve, delays[attempt]));
+
+      if (pollAbortRef.current || activeTxRefRef.current !== ref) {
+        if (timerRef.current) clearInterval(timerRef.current);
+        return;
+      }
+
+      try {
+        const res = await verifyResellerDeposit(ref);
+        
+        // Match aiby_client logic: verify response
+        if (res.success && !res.message?.toLowerCase().includes('pending') && !res.message?.toLowerCase().includes('failed')) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          showToast('success', `Balance added successfully! New balance: ${fmtETB(res.reseller_balance || 0)}`);
+          setStep('done');
+          onSuccess();
+          return;
+        }
+
+        const msgLower = String(res.message || '').toLowerCase();
+        const isFailed = msgLower.includes('failed') || msgLower.includes('reject') || msgLower.includes('cancel');
+        if (isFailed) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          setStep('error');
+          setPollError(res.message || 'Transaction was failed/cancelled by the user.');
+          return;
+        }
+      } catch (err: any) {
+        console.error('[verify-poll-error]', err);
+      }
+    }
+
+    if (timerRef.current) clearInterval(timerRef.current);
+    // Timeout
+    setStep('error');
+    setPollError('Verification timed out. If payment was made, balance will update in background.');
+  };
 
   const handleInit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || parseFloat(amount) <= 0) return;
     setLoading(true);
     try {
-      const nameParts = name.trim().split(' ');
-      const res = await initResellerDeposit(
-        parseFloat(amount),
-        nameParts[0] || 'Admin',
-        nameParts.slice(1).join(' ') || '',
-        email || undefined
-      );
+      const res = await initResellerDeposit(parseFloat(amount));
       if (res.success && res.checkout_url && res.tx_ref) {
         setCheckoutUrl(res.checkout_url);
         setTxRef(res.tx_ref);
-        setStep('paying');
-        // Open Chapa in new tab
         window.open(res.checkout_url, '_blank');
+        startPollingVerification(res.tx_ref);
       } else {
         showToast('error', res.error || 'Failed to initialize payment');
       }
@@ -96,26 +182,20 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
     }
   };
 
-  const handleVerify = async () => {
+  const handleManualCheck = async () => {
     if (!txRef) return;
     setLoading(true);
-    setStep('verifying');
     try {
       const res = await verifyResellerDeposit(txRef);
-      if (res.success && !res.message?.includes('pending') && !res.message?.includes('failed')) {
-        setStep('done');
+      if (res.success && !res.message?.toLowerCase().includes('pending') && !res.message?.toLowerCase().includes('failed')) {
         showToast('success', `Balance added successfully! New balance: ${fmtETB(res.reseller_balance || 0)}`);
+        setStep('done');
         onSuccess();
-      } else if (res.message?.includes('pending') || res.message?.includes('processing')) {
-        showToast('info', 'Payment still processing. Please wait and try again.');
-        setStep('paying');
       } else {
-        showToast('error', 'Payment not confirmed yet. Please complete payment first.');
-        setStep('paying');
+        showToast('info', res.message || 'Payment is still processing.');
       }
     } catch (err: any) {
       showToast('error', err.message || 'Verification failed');
-      setStep('paying');
     } finally {
       setLoading(false);
     }
@@ -127,60 +207,120 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
     <Modal open={open} onClose={handleClose} title="💳 Add Balance via Chapa">
       {step === 'form' && (
         <form onSubmit={handleInit}>
-          <div style={{ marginBottom: 16 }}>
+          <div style={{ marginBottom: 20 }}>
             <label style={labelStyle}>Amount (ETB) *</label>
             <input type="number" min="10" style={inputStyle} value={amount} onChange={e => setAmount(e.target.value)} placeholder="e.g. 500" required autoFocus />
           </div>
-          <div style={{ marginBottom: 16 }}>
-            <label style={labelStyle}>Your Name (for Chapa)</label>
-            <input type="text" style={inputStyle} value={name} onChange={e => setName(e.target.value)} placeholder="Admin Name" />
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 20 }}>
+            {[100, 500, 1000, 5000].map(amt => (
+              <button
+                key={amt}
+                type="button"
+                className="btn btn--secondary"
+                style={{ padding: '8px 0', fontSize: 13 }}
+                onClick={() => {
+                  const currentVal = parseInt(amount || '0', 10);
+                  setAmount(String(currentVal + amt));
+                }}
+              >
+                +{amt}
+              </button>
+            ))}
           </div>
-          <div style={{ marginBottom: 24 }}>
-            <label style={labelStyle}>Email (for Chapa)</label>
-            <input type="email" style={inputStyle} value={email} onChange={e => setEmail(e.target.value)} placeholder="admin@primore.com" />
-          </div>
+
           <div style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 10, padding: '12px 16px', marginBottom: 24, fontSize: 13, color: 'rgba(255,255,255,0.65)' }}>
-            ℹ️ After clicking Pay, a Chapa payment page will open in a new tab. Complete the payment, then return here and click "I've Paid".
+            ℹ️ After clicking Pay, a Chapa payment page will open in a new tab. Complete the payment, and we will verify it automatically.
           </div>
-          <button type="submit" disabled={loading || !amount} className="btn btn--primary btn--full" style={{ padding: '14px', borderRadius: 10, fontSize: 15, fontWeight: 600, width: '100%', opacity: (loading || !amount) ? 0.6 : 1 }}>
+          
+          <button type="submit" disabled={loading || !amount || parseFloat(amount) < 10} className="btn btn--primary btn--full" style={{ padding: '14px', borderRadius: 10, fontSize: 15, fontWeight: 600, width: '100%', opacity: (loading || !amount || parseFloat(amount) < 10) ? 0.6 : 1 }}>
             {loading ? '⏳ Initializing...' : '💳 Pay with Chapa'}
           </button>
         </form>
       )}
 
-      {(step === 'paying' || step === 'verifying') && (
+      {step === 'verifying' && (
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🔗</div>
-          <h4 style={{ color: '#fff', marginBottom: 8 }}>Complete Payment</h4>
-          <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, marginBottom: 24 }}>
-            Paying <strong style={{ color: '#6366f1' }}>{fmtETB(parseFloat(amount || '0'))}</strong>.
-            Complete the payment on the Chapa page that opened.
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+            <div style={{ position: 'relative', width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="spinner" style={{ width: 40, height: 40 }} />
+              <span style={{ fontSize: 20, position: 'absolute' }}>📱</span>
+            </div>
+          </div>
+
+          <h4 style={{ color: '#fff', marginBottom: 8, fontSize: 18, fontWeight: 700 }}>Awaiting Payment Verification</h4>
+          <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, lineHeight: 1.5, marginBottom: 20 }}>
+            Please complete your payment of <strong style={{ color: '#6366f1' }}>{fmtETB(parseFloat(amount || '0'))}</strong> in the mobile wallet prompt.
+            Enter your <strong>PIN</strong> to authorize.
           </p>
+
+          <div style={{ width: '100%', height: 8, background: 'rgba(255,255,255,0.05)', borderRadius: 4, overflow: 'hidden', marginBottom: 12 }}>
+            <div style={{
+              height: '100%',
+              width: `${(timeLeft / 45) * 100}%`,
+              background: 'linear-gradient(90deg, #6366f1 0%, #a855f7 100%)',
+              transition: 'width 1s linear',
+              borderRadius: 4
+            }}></div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 24 }}>
+            <span>{timeLeft > 0 ? `Checking status (${timeLeft}s)...` : 'Checking final confirmation...'}</span>
+            <span style={{ color: '#6366f1', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#6366f1', display: 'inline-block' }}></span>
+              Live Checking
+            </span>
+          </div>
+
           <button
             onClick={() => window.open(checkoutUrl, '_blank')}
             className="btn btn--secondary"
-            style={{ width: '100%', marginBottom: 12, padding: '12px', borderRadius: 10 }}
+            style={{ width: '100%', marginBottom: 12, padding: '12px', borderRadius: 10, fontSize: 14 }}
           >
-            🔗 Reopen Chapa Page
+            🔗 Reopen Payment Link
           </button>
+          
           <button
-            onClick={handleVerify}
+            onClick={handleManualCheck}
             disabled={loading}
             className="btn btn--primary btn--full"
-            style={{ width: '100%', padding: '14px', borderRadius: 10, fontSize: 15, fontWeight: 600, opacity: loading ? 0.6 : 1 }}
+            style={{ width: '100%', padding: '13px', borderRadius: 10, fontSize: 14, fontWeight: 600, marginBottom: 12, opacity: loading ? 0.6 : 1 }}
           >
-            {step === 'verifying' ? '⏳ Verifying...' : "✅ I've Paid — Verify"}
+            {loading ? '⏳ Checking...' : '🔄 Re-Check Balance Now'}
           </button>
-          <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, marginTop: 16 }}>
-            Ref: {txRef}
+
+          <button
+            onClick={handleClose}
+            className="btn"
+            style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: 13 }}
+          >
+            Cancel / Close window
+          </button>
+        </div>
+      )}
+
+      {step === 'error' && (
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 56, marginBottom: 16 }}>⚠️</div>
+          <h4 style={{ color: '#ef4444', fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Payment Verification Unconfirmed</h4>
+          <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, lineHeight: 1.5, marginBottom: 24 }}>
+            {pollError || 'The transaction could not be verified yet. If you paid, it will credit in the background.'}
           </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <button onClick={handleManualCheck} disabled={loading} className="btn btn--primary" style={{ padding: '12px', borderRadius: 10, fontWeight: 600 }}>
+              {loading ? 'Checking...' : '🔄 Try Checking Again'}
+            </button>
+            <button onClick={() => setStep('form')} className="btn btn--secondary" style={{ padding: '12px', borderRadius: 10 }}>
+              Try a Different Deposit
+            </button>
+          </div>
         </div>
       )}
 
       {step === 'done' && (
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
-          <h4 style={{ color: '#22c55e', fontSize: 20, marginBottom: 8 }}>Balance Added!</h4>
+          <h4 style={{ color: '#22c55e', fontSize: 20, marginBottom: 8, fontWeight: 700 }}>Balance Added!</h4>
           <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, marginBottom: 24 }}>Your reseller balance has been successfully topped up.</p>
           <button onClick={handleClose} className="btn btn--primary" style={{ padding: '12px 32px', borderRadius: 10 }}>Done</button>
         </div>
