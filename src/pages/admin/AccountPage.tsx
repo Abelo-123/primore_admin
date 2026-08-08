@@ -170,17 +170,30 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
     e.preventDefault();
     if (!amount || parseFloat(amount) <= 0) return;
     setLoading(true);
+
+    // Pre-open window synchronously to bypass popup blocker
+    const paymentWindow = window.open('about:blank', '_blank');
+
     try {
       const res = await initResellerDeposit(parseFloat(amount));
       if (res.success && res.checkout_url && res.tx_ref) {
         setCheckoutUrl(res.checkout_url);
         setTxRef(res.tx_ref);
-        window.open(res.checkout_url, '_blank');
+
+        if (paymentWindow) {
+          paymentWindow.location.href = res.checkout_url;
+        } else {
+          // Fallback
+          window.open(res.checkout_url, '_blank');
+        }
+
         startPollingVerification(res.tx_ref);
       } else {
+        if (paymentWindow) paymentWindow.close();
         showToast('error', res.error || (res ? `Response: ${JSON.stringify(res)}` : 'Failed to initialize payment'));
       }
     } catch (err: any) {
+      if (paymentWindow) paymentWindow.close();
       console.error('[AddBalance] Init error:', err);
       const msg = err?.message || (typeof err === 'string' ? err : JSON.stringify(err));
       showToast('error', `Error: ${msg}`);
