@@ -443,5 +443,68 @@ export async function deleteSingleBroadcastMessage(msgId: number): Promise<{ suc
   });
 }
 
+// ─── Reseller Deposit (Admin Add Balance via Chapa) ─────────────────
 
+export interface ResellerDeposit {
+  id: number;
+  amount: number;
+  tx_ref: string;
+  status: string;
+  chapa_tx_ref: string | null;
+  created_at: string;
+  completed_at: string | null;
+}
 
+export async function initResellerDeposit(
+  amount: number,
+  first_name?: string,
+  last_name?: string,
+  email?: string
+): Promise<{ success: boolean; checkout_url?: string; tx_ref?: string; error?: string }> {
+  return adminFetch('/admin/reseller/deposit/init', {
+    method: 'POST',
+    body: JSON.stringify({ amount, first_name, last_name, email }),
+  });
+}
+
+export async function verifyResellerDeposit(
+  tx_ref: string
+): Promise<{ success: boolean; message?: string; reseller_balance?: number; error?: string }> {
+  return adminFetch('/admin/reseller/deposit/verify', {
+    method: 'POST',
+    body: JSON.stringify({ tx_ref }),
+  });
+}
+
+export async function getResellerDepositHistory(): Promise<{ success: boolean; deposits: ResellerDeposit[] }> {
+  return adminFetch('/admin/reseller/deposit/history');
+}
+
+// ─── Reseller Withdrawal Request ────────────────────────────────────
+
+export interface AdminWithdrawalRequest {
+  id: number;
+  amount: number;
+  bank_name: string;
+  account_number: string;
+  account_name: string | null;
+  status: 'pending' | 'sent';
+  joadmin_request_id: number | null;
+  created_at: string;
+}
+
+export async function requestResellerWithdrawal(
+  amount: number,
+  bank_name: string,
+  account_number: string,
+  account_name?: string
+): Promise<{ success: boolean; local_id?: number; joadmin_request_id?: number; status?: string; message?: string; new_total_deposit?: number; error?: string }> {
+  return adminFetch('/admin/reseller/withdraw-deposit', {
+    method: 'POST',
+    body: JSON.stringify({ amount, bank_name, account_number, account_name }),
+  });
+}
+
+export async function getResellerWithdrawalHistory(): Promise<{ success: boolean; withdrawals: AdminWithdrawalRequest[] }> {
+  return adminFetch('/admin/reseller/withdrawal-history');
+}
