@@ -148,11 +148,12 @@ export function SettingsPage() {
 }
 
 // ─── Setting Row with inline edit ───────────────────────────────
-function SettingRow({ label, description, type, value, saving, onSave }: {
+function SettingRow({ label, description, type, value, min, saving, onSave }: {
   label: string;
   description: string;
   type: 'text' | 'number';
   value: string;
+  min?: number;
   saving: boolean;
   onSave: (val: string) => void;
 }) {
@@ -179,6 +180,7 @@ function SettingRow({ label, description, type, value, saving, onSave }: {
               className="form-input"
               type={type}
               value={draft}
+              min={min}
               onChange={e => setDraft(e.target.value)}
               style={{ width: 150, padding: '6px 10px', fontSize: 13 }}
               autoFocus
