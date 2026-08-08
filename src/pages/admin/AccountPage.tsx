@@ -85,6 +85,17 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
 
   useEffect(() => {
     if (open) {
+      // Check if user returned from Chapa after paying
+      const pendingTxRef = sessionStorage.getItem('pending_deposit_tx_ref');
+      const pendingAmount = sessionStorage.getItem('pending_deposit_amount');
+      if (pendingTxRef) {
+        sessionStorage.removeItem('pending_deposit_tx_ref');
+        sessionStorage.removeItem('pending_deposit_amount');
+        if (pendingAmount) setAmount(pendingAmount);
+        setTxRef(pendingTxRef);
+        startPollingVerification(pendingTxRef);
+        return;
+      }
       // Diagnostic test route check
       testResellerRoute()
         .then(res => console.log('Diagnostic [test-init] success:', res))
@@ -166,26 +177,20 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
     setPollError('Verification timed out. If payment was made, balance will update in background.');
   };
 
-  const openCheckoutUrl = (url: string) => {
-    const tg = (window as any).Telegram?.WebApp;
-    if (tg) {
-      tg.openLink(url);
-    } else {
-      window.open(url, '_blank');
-    }
-  };
-
   const handleInit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || parseFloat(amount) <= 0) return;
     setLoading(true);
     try {
-      const res = await initResellerDeposit(parseFloat(amount));
+      // Build return URL: Chapa will redirect back here after payment
+      const returnUrl = window.location.origin + window.location.pathname + '?deposit=reseller';
+      const res = await initResellerDeposit(parseFloat(amount), returnUrl);
       if (res.success && res.checkout_url && res.tx_ref) {
-        setCheckoutUrl(res.checkout_url);
-        setTxRef(res.tx_ref);
-        // Move to verifying step — user taps the payment button directly (never blocked)
-        startPollingVerification(res.tx_ref);
+        // Save state before navigating away
+        sessionStorage.setItem('pending_deposit_tx_ref', res.tx_ref);
+        sessionStorage.setItem('pending_deposit_amount', amount);
+        // Navigate current tab directly — works everywhere, never blocked
+        window.location.href = res.checkout_url;
       } else {
         showToast('error', res.error || (res ? `Response: ${JSON.stringify(res)}` : 'Failed to initialize payment'));
       }
@@ -257,39 +262,17 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
 
       {step === 'verifying' && (
         <div style={{ textAlign: 'center' }}>
-
-          {/* PRIMARY ACTION — tap to open Chapa (direct user gesture, never blocked) */}
-          <button
-            onClick={() => openCheckoutUrl(checkoutUrl)}
-            className="btn btn--primary btn--full"
-            style={{
-              width: '100%',
-              padding: '16px',
-              borderRadius: 12,
-              fontSize: 16,
-              fontWeight: 700,
-              marginBottom: 20,
-              background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
-              boxShadow: '0 4px 20px rgba(99,102,241,0.4)',
-              border: 'none',
-              cursor: 'pointer',
-              color: '#fff'
-            }}
-          >
-            💳 Open Chapa Payment Page
-          </button>
-
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-            <div style={{ position: 'relative', width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div className="spinner" style={{ width: 40, height: 40 }} />
-              <span style={{ fontSize: 20, position: 'absolute' }}>📱</span>
+            <div style={{ position: 'relative', width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="spinner" style={{ width: 48, height: 48 }} />
+              <span style={{ fontSize: 24, position: 'absolute' }}>💳</span>
             </div>
           </div>
 
-          <h4 style={{ color: '#fff', marginBottom: 8, fontSize: 16, fontWeight: 700 }}>Awaiting Payment Verification</h4>
-          <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, lineHeight: 1.5, marginBottom: 16 }}>
-            Tap the button above to open Chapa, pay <strong style={{ color: '#6366f1' }}>{fmtETB(parseFloat(amount || '0'))}</strong>,
-            then come back — we'll verify automatically.
+          <h4 style={{ color: '#fff', marginBottom: 8, fontSize: 18, fontWeight: 700 }}>Verifying Payment</h4>
+          <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, lineHeight: 1.6, marginBottom: 20 }}>
+            Checking your payment of <strong style={{ color: '#6366f1' }}>{fmtETB(parseFloat(amount || '0'))}</strong>.<br />
+            This will update automatically once Chapa confirms.
           </p>
 
           <div style={{ width: '100%', height: 6, background: 'rgba(255,255,255,0.05)', borderRadius: 4, overflow: 'hidden', marginBottom: 8 }}>
@@ -302,7 +285,7 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
             }}></div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 24 }}>
             <span>{timeLeft > 0 ? `Auto-checking in ${timeLeft}s...` : 'Checking final confirmation...'}</span>
             <span style={{ color: '#6366f1', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 4 }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#6366f1', display: 'inline-block' }}></span>
@@ -313,10 +296,10 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
           <button
             onClick={handleManualCheck}
             disabled={loading}
-            className="btn btn--secondary"
-            style={{ width: '100%', padding: '12px', borderRadius: 10, fontSize: 14, fontWeight: 600, marginBottom: 10, opacity: loading ? 0.6 : 1 }}
+            className="btn btn--primary btn--full"
+            style={{ width: '100%', padding: '13px', borderRadius: 10, fontSize: 14, fontWeight: 600, marginBottom: 10, opacity: loading ? 0.6 : 1 }}
           >
-            {loading ? '⏳ Checking...' : '🔄 I Already Paid — Check Now'}
+            {loading ? '⏳ Checking...' : '🔄 Check Now'}
           </button>
 
           <button
@@ -444,7 +427,18 @@ export function AccountPage() {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
 
-  useEffect(() => { loadAll(); }, []);
+  useEffect(() => {
+    loadAll();
+    
+    // Auto-open modal if user returned from Chapa redirect
+    const pendingTxRef = sessionStorage.getItem('pending_deposit_tx_ref');
+    const urlParams = new URLSearchParams(window.location.search);
+    if (pendingTxRef || urlParams.get('deposit') === 'reseller') {
+      setAddBalanceOpen(true);
+      // Clean query parameter from address bar
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   async function loadAll() {
     setLoadingStatus(true);

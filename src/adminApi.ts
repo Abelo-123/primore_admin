@@ -471,13 +471,14 @@ export interface ResellerDeposit {
 
 export async function initResellerDeposit(
   amount: number,
+  return_url?: string,
   first_name?: string,
   last_name?: string,
   email?: string
 ): Promise<{ success: boolean; checkout_url?: string; tx_ref?: string; error?: string }> {
   return adminFetch('/admin/reseller/deposit/init', {
     method: 'POST',
-    body: JSON.stringify({ amount, first_name, last_name, email }),
+    body: JSON.stringify({ amount, return_url, first_name, last_name, email }),
   });
 }
 
