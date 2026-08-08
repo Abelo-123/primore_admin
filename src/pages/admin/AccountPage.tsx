@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { changeAdminPassword, getResellerStatus, initResellerDeposit, verifyResellerDeposit,
   getResellerDepositHistory, requestResellerWithdrawal, getResellerWithdrawalHistory,
-  type ResellerStatus, type ResellerDeposit, type AdminWithdrawalRequest } from '../../adminApi';
+  testResellerRoute, type ResellerStatus, type ResellerDeposit, type AdminWithdrawalRequest } from '../../adminApi';
 import { useAdmin } from '../../AdminApp';
 
 // ─── Format helpers ────────────────────────────────────────────────
@@ -86,9 +86,9 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
   useEffect(() => {
     if (open) {
       // Diagnostic test route check
-      adminFetch<{ success: boolean; message: string }>('/admin/reseller/deposit/test-init')
+      testResellerRoute()
         .then(res => console.log('Diagnostic [test-init] success:', res))
-        .catch(err => console.error('Diagnostic [test-init] failed:', err));
+        .catch((err: any) => console.error('Diagnostic [test-init] failed:', err));
     } else {
       reset();
     }

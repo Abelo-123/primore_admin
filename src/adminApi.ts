@@ -522,3 +522,7 @@ export async function requestResellerWithdrawal(
 export async function getResellerWithdrawalHistory(): Promise<{ success: boolean; withdrawals: AdminWithdrawalRequest[] }> {
   return adminFetch('/admin/reseller/withdrawal-history');
 }
+
+export async function testResellerRoute(): Promise<{ success: boolean; message: string }> {
+  return adminFetch<{ success: boolean; message: string }>('/admin/reseller/deposit/test-init');
+}
