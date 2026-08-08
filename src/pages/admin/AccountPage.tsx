@@ -182,15 +182,27 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
     if (!amount || parseFloat(amount) <= 0) return;
     setLoading(true);
     try {
-      // Build return URL: Chapa will redirect back here after payment
+      const tg = (window as any).Telegram?.WebApp;
+      
+      // Build return URL: Chapa will redirect back here after payment (for standard browser fallback)
       const returnUrl = window.location.origin + window.location.pathname + '?deposit=reseller';
       const res = await initResellerDeposit(parseFloat(amount), returnUrl);
+      
       if (res.success && res.checkout_url && res.tx_ref) {
-        // Save state before navigating away
-        sessionStorage.setItem('pending_deposit_tx_ref', res.tx_ref);
-        sessionStorage.setItem('pending_deposit_amount', amount);
-        // Navigate current tab directly — works everywhere, never blocked
-        window.location.href = res.checkout_url;
+        setCheckoutUrl(res.checkout_url);
+        setTxRef(res.tx_ref);
+
+        if (tg && typeof tg.openLink === 'function') {
+          // Slide up native Telegram overlay browser sheet (p2.jpg)
+          tg.openLink(res.checkout_url);
+          // Start polling directly on the verifying screen
+          startPollingVerification(res.tx_ref);
+        } else {
+          // Standard browser fallback: save state and redirect current tab (never blocked)
+          sessionStorage.setItem('pending_deposit_tx_ref', res.tx_ref);
+          sessionStorage.setItem('pending_deposit_amount', amount);
+          window.location.href = res.checkout_url;
+        }
       } else {
         showToast('error', res.error || (res ? `Response: ${JSON.stringify(res)}` : 'Failed to initialize payment'));
       }
