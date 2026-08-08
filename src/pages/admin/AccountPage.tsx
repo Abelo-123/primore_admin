@@ -108,6 +108,26 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
     };
   }, [open]);
 
+  const triggerDepositSuccess = (newBalance: number) => {
+    const tg = (window as any).Telegram?.WebApp;
+    if (tg && tg.HapticFeedback) {
+      try {
+        tg.HapticFeedback.notificationOccurred('success');
+      } catch (e) {}
+    }
+    showToast('success', `Deposit confirmed! Balance: ${fmtETB(newBalance)}`);
+    setStep('done');
+    onSuccess();
+    
+    // Auto-scroll to Recent Deposits list
+    setTimeout(() => {
+      const el = document.getElementById('reseller-deposit-history');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 300);
+  };
+
   // Polling logic inspired by aiby_client/src/pages/DepositPage/DepositPage.tsx
   const startPollingVerification = async (ref: string) => {
     activeTxRefRef.current = ref;
@@ -152,9 +172,7 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
         // Match aiby_client logic: verify response
         if (res.success && !res.message?.toLowerCase().includes('pending') && !res.message?.toLowerCase().includes('failed')) {
           if (timerRef.current) clearInterval(timerRef.current);
-          showToast('success', `Balance added successfully! New balance: ${fmtETB(res.reseller_balance || 0)}`);
-          setStep('done');
-          onSuccess();
+          triggerDepositSuccess(res.reseller_balance || 0);
           return;
         }
 
@@ -225,9 +243,7 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
     try {
       const res = await verifyResellerDeposit(txRef);
       if (res.success && !res.message?.toLowerCase().includes('pending') && !res.message?.toLowerCase().includes('failed')) {
-        showToast('success', `Balance added successfully! New balance: ${fmtETB(res.reseller_balance || 0)}`);
-        setStep('done');
-        onSuccess();
+        triggerDepositSuccess(res.reseller_balance || 0);
       } else {
         showToast('info', res.message || 'Payment is still processing.');
       }
@@ -572,7 +588,7 @@ export function AccountPage() {
 
       {/* ── Deposit History ── */}
       {activeTab === 'deposits' && (
-        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, overflow: 'hidden' }}>
+        <div id="reseller-deposit-history" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, overflow: 'hidden' }}>
           <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)', fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>
             📥 Reseller Deposit History ({deposits.length})
           </div>

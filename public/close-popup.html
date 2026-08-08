@@ -38,31 +38,34 @@
     </div>
 
     <script>
+        // Phase 2: Close-Popup Execution
         function handleClose() {
-            // 1. Try closing native Telegram WebApp browser overlay sheet
+            // Environment Verification & Auto-Ready
             try {
                 if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.ready();
+                    // Closing the WebView
                     window.Telegram.WebApp.close();
                 }
             } catch (e) {}
 
-            // 2. Try standard window.close
             try {
                 window.close();
             } catch (e) {}
 
-            // 3. Fallback: deep link back to adminprimora444 bot
-            const urlParams = new URLSearchParams(window.location.search);
-            const botUsername = urlParams.get('bot') || 'adminprimora444';
-            
-            try {
-                window.location.replace("tg://resolve?domain=" + botUsername + "&startapp=open");
-            } catch (e) {
-                window.location.replace("https://t.me/" + botUsername + "?startapp=open");
-            }
+            // App Refocus Fallback after 200ms
+            setTimeout(function() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const botUsername = urlParams.get('bot') || 'adminprimora444';
+                try {
+                    window.location.replace("tg://resolve?domain=" + botUsername + "&startapp=open");
+                } catch (e) {
+                    window.location.replace("https://t.me/" + botUsername + "?startapp=open");
+                }
+            }, 200);
         }
 
-        // Execute closure immediately
+        // Run immediately on page load
         handleClose();
     </script>
 </body>
