@@ -150,14 +150,14 @@ export function FinancePage() {
 
   return (
     <div className="finance-page" style={{ animation: 'fadeIn 0.3s ease' }}>
-      
+
       {/* ─── Reseller & Deposit Operations Cards ─── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20, marginBottom: 28 }}>
-        
+
         {/* Reseller Wallet Balance Card */}
         <div className="stat-card" style={{ background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(168, 85, 247, 0.08))', border: '1px solid rgba(99, 102, 241, 0.3)' }}>
           <div className="stat-card__header">
-            <span className="stat-card__label" style={{ color: '#818cf8', fontWeight: 700 }}>Reseller Balance (with joadmin)</span>
+            <span className="stat-card__label" style={{ color: '#818cf8', fontWeight: 700 }}>Reseller Balance (with primora444)</span>
             <div className="stat-card__icon stat-card__icon--blue">💳</div>
           </div>
           <div className="stat-card__value" style={{ fontSize: 28, color: '#a5b4fc', margin: '8px 0' }}>
@@ -200,7 +200,7 @@ export function FinancePage() {
 
       {/* ─── Top Stats Row ─── */}
       <div className="stats-grid" style={{ marginBottom: 28 }}>
-        
+
         {/* Withdrawable Balance */}
         <div className="stat-card">
           <div className="stat-card__header">
@@ -238,7 +238,7 @@ export function FinancePage() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24, marginBottom: 28 }}>
-        
+
         {/* ─── REVENUE BLOCK ─── */}
         <div className="settings-card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <h3 className="settings-card__title" style={{ color: 'var(--success)', borderBottom: '1px solid var(--border-color)', paddingBottom: 12 }}>
@@ -315,7 +315,7 @@ export function FinancePage() {
           }}>
             <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>➕ Add Reseller Balance</h3>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
-              Deposit funds to your reseller wallet with joadmin.
+              Deposit funds to your reseller wallet with primora444.
             </p>
             <form onSubmit={handleAddBalanceSubmit}>
               <div style={{ marginBottom: 20 }}>

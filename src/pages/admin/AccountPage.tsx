@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { changeAdminPassword, getResellerStatus, initResellerDeposit, verifyResellerDeposit,
+import {
+  changeAdminPassword, getResellerStatus, initResellerDeposit, verifyResellerDeposit,
   getResellerDepositHistory, requestResellerWithdrawal, getResellerWithdrawalHistory,
-  testResellerRoute, type ResellerStatus, type ResellerDeposit, type AdminWithdrawalRequest } from '../../adminApi';
+  testResellerRoute, type ResellerStatus, type ResellerDeposit, type AdminWithdrawalRequest
+} from '../../adminApi';
 import { useAdmin } from '../../AdminApp';
 
 // ─── Format helpers ────────────────────────────────────────────────
@@ -15,11 +17,11 @@ function fmtDate(d: string) {
 // ─── Status badge ──────────────────────────────────────────────────
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { bg: string; color: string; label: string }> = {
-    pending:   { bg: 'rgba(234,179,8,0.15)',  color: '#eab308', label: '⏳ Pending' },
-    sent:      { bg: 'rgba(34,197,94,0.15)',  color: '#22c55e', label: '✅ Sent' },
-    success:   { bg: 'rgba(34,197,94,0.15)',  color: '#22c55e', label: '✅ Success' },
-    completed: { bg: 'rgba(34,197,94,0.15)',  color: '#22c55e', label: '✅ Completed' },
-    failed:    { bg: 'rgba(239,68,68,0.15)',  color: '#ef4444', label: '❌ Failed' },
+    pending: { bg: 'rgba(234,179,8,0.15)', color: '#eab308', label: '⏳ Pending' },
+    sent: { bg: 'rgba(34,197,94,0.15)', color: '#22c55e', label: '✅ Sent' },
+    success: { bg: 'rgba(34,197,94,0.15)', color: '#22c55e', label: '✅ Success' },
+    completed: { bg: 'rgba(34,197,94,0.15)', color: '#22c55e', label: '✅ Completed' },
+    failed: { bg: 'rgba(239,68,68,0.15)', color: '#ef4444', label: '❌ Failed' },
     initiated: { bg: 'rgba(99,102,241,0.15)', color: '#6366f1', label: '🔗 Initiated' },
   };
   const s = map[status?.toLowerCase()] || { bg: 'rgba(255,255,255,0.07)', color: '#aaa', label: status };
@@ -113,12 +115,12 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
     if (tg && tg.HapticFeedback) {
       try {
         tg.HapticFeedback.notificationOccurred('success');
-      } catch (e) {}
+      } catch (e) { }
     }
     showToast('success', `Deposit confirmed! Balance: ${fmtETB(newBalance)}`);
     setStep('done');
     onSuccess();
-    
+
     // Auto-scroll to Recent Deposits list
     setTimeout(() => {
       const el = document.getElementById('reseller-deposit-history');
@@ -168,7 +170,7 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
 
       try {
         const res = await verifyResellerDeposit(ref);
-        
+
         // Match aiby_client logic: verify response
         if (res.success && !res.message?.toLowerCase().includes('pending') && !res.message?.toLowerCase().includes('failed')) {
           if (timerRef.current) clearInterval(timerRef.current);
@@ -201,15 +203,15 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
     setLoading(true);
     try {
       const tg = (window as any).Telegram?.WebApp;
-      
+
       // Build return URL dynamically: close-popup.html for Telegram native close, query param for standard browser fallback
       let returnUrl = window.location.origin + '/close-popup.html?bot=adminprimora444';
       if (!tg) {
         returnUrl = window.location.origin + window.location.pathname + '?deposit=reseller';
       }
-      
+
       const res = await initResellerDeposit(parseFloat(amount), returnUrl);
-      
+
       if (res.success && res.checkout_url && res.tx_ref) {
         setCheckoutUrl(res.checkout_url);
         setTxRef(res.tx_ref);
@@ -285,7 +287,7 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
           <div style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 10, padding: '12px 16px', marginBottom: 24, fontSize: 13, color: 'rgba(255,255,255,0.65)' }}>
             ℹ️ After clicking Pay, a Chapa payment page will open in a new tab. Complete the payment, and we will verify it automatically.
           </div>
-          
+
           <button type="submit" disabled={loading || !amount || parseFloat(amount) < 10} className="btn btn--primary btn--full" style={{ padding: '14px', borderRadius: 10, fontSize: 15, fontWeight: 600, width: '100%', opacity: (loading || !amount || parseFloat(amount) < 10) ? 0.6 : 1 }}>
             {loading ? '⏳ Initializing...' : '💳 Pay with Chapa'}
           </button>
@@ -394,7 +396,7 @@ function WithdrawModal({ open, onClose, maxAmount, onSuccess }: { open: boolean;
     try {
       const res = await requestResellerWithdrawal(amt, bankName, accountNumber, accountName);
       if (res.success) {
-        showToast('success', 'Withdrawal request submitted! Awaiting joadmin confirmation.');
+        showToast('success', 'Withdrawal request submitted! Awaiting primora444 confirmation.');
         onSuccess();
         onClose();
       } else {
@@ -430,7 +432,7 @@ function WithdrawModal({ open, onClose, maxAmount, onSuccess }: { open: boolean;
           <input type="text" style={inputStyle} value={accountName} onChange={e => setAccountName(e.target.value)} placeholder="Full name on account" />
         </div>
         <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '10px 14px', marginBottom: 20, fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>
-          ℹ️ Your request will be sent to joadmin. Once they manually transfer the money, you'll see the status update to "Sent".
+          ℹ️ Your request will be sent to primora444. Once they manually transfer the money, you'll see the status update to "Sent".
         </div>
         <button type="submit" disabled={loading || !amount || !bankName || !accountNumber} className="btn btn--primary btn--full" style={{ padding: '14px', borderRadius: 10, fontSize: 15, fontWeight: 600, width: '100%', opacity: (loading || !amount || !bankName || !accountNumber) ? 0.6 : 1 }}>
           {loading ? '⏳ Submitting...' : '📤 Submit Withdrawal Request'}
@@ -461,7 +463,7 @@ export function AccountPage() {
 
   useEffect(() => {
     loadAll();
-    
+
     // Auto-open modal if user returned from Chapa redirect
     const pendingTxRef = sessionStorage.getItem('pending_deposit_tx_ref');
     const urlParams = new URLSearchParams(window.location.search);

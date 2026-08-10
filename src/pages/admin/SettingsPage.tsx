@@ -61,7 +61,7 @@ export function SettingsPage() {
           onSave={(val) => {
             const minAllowed = settings.min_rate_multiplier ? parseFloat(settings.min_rate_multiplier) : 0;
             if (parseFloat(val) < minAllowed) {
-              showToast('error', `Multiplier cannot be set lower than the minimum multiplicity baseline (${minAllowed}) set by main admin (joadmin).`);
+              showToast('error', `Multiplier cannot be set lower than the minimum multiplicity baseline (${minAllowed}) set by main admin (primora444).`);
               return;
             }
             save('rate_multiplier', val);
