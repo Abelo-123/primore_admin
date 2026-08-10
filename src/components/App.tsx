@@ -15,7 +15,7 @@ import {
 } from '@telegram-apps/sdk-react';
 import { hapticSelection } from '../helpers/telegram';
 
-// ─── Lazy-loaded pages (code-split per tab) ─────────────────
+// ─── Lazy-lkoaded pages (code-split per tab) ─────────────────
 const OrderPage = lazy(() => import('../pages/OrderPage/OrderPage').then(m => ({ default: m.OrderPage })));
 const HistoryPage = lazy(() => import('../pages/HistoryPage/HistoryPage').then(m => ({ default: m.HistoryPage })));
 const DepositPage = lazy(() => import('../pages/DepositPage/DepositPage').then(m => ({ default: m.DepositPage })));
@@ -36,13 +36,13 @@ function AppContent() {
   // Show maintenance screen
   if (maintenanceMode === true) {
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        padding: 40, 
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 40,
         textAlign: 'center',
         background: 'var(--bg-primary)',
         color: 'var(--text-primary)'
