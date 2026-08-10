@@ -257,7 +257,7 @@ export function AdminApp() {
           <div className="sidebar__brand">
             <div className="sidebar__logo">P</div>
             <div>
-              <div className="sidebar__title">Paxyo</div>
+              <div className="sidebar__title">primora444</div>
               <div className="sidebar__subtitle">Admin Panel</div>
             </div>
           </div>
@@ -327,7 +327,7 @@ export function AdminApp() {
               <div className="user-info">
                 <div>
                   <div className="user-info__name">Admin</div>
-                  <div className="user-info__sub">Paxyo Panel</div>
+                  <div className="user-info__sub">primora444 Panel</div>
                 </div>
                 <div className="user-avatar">A</div>
               </div>

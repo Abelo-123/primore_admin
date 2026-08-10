@@ -51,13 +51,13 @@ export const MOCK_DEPOSITS: Deposit[] = [
 
 // ─── Mock Alerts ──────────────────────────────────────────────
 export const MOCK_ALERTS: Alert[] = [
-    { id: 1, message: '🎉 Welcome to Paxyo SMM! Explore our services and get started.', is_read: false, created_at: '2026-02-11T08:00:00Z' },
+    { id: 1, message: '🎉 Welcome to primora444 SMM! Explore our services and get started.', is_read: false, created_at: '2026-02-11T08:00:00Z' },
     { id: 2, message: '✅ Your order #88001 has been completed!', is_read: true, created_at: '2026-02-10T14:00:00Z' },
 ];
 
 // ─── Mock Chat ────────────────────────────────────────────────
 export const MOCK_CHAT: ChatMessage[] = [
-    { id: 1, sender: 'admin', message: 'Hello! Welcome to Paxyo support. How can I help you?', created_at: '2026-02-11T08:00:00Z' },
+    { id: 1, sender: 'admin', message: 'Hello! Welcome to primora444 support. How can I help you?', created_at: '2026-02-11T08:00:00Z' },
 ];
 
 // ─── Mock Settings ────────────────────────────────────────────

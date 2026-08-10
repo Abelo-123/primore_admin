@@ -92,7 +92,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         holidayName: '',
         maintenanceMode: false,
         userCanOrder: true,
-        marqueeText: 'Welcome to Paxyo SMM!',
+        marqueeText: 'Welcome to primora444 SMM!',
         topServicesIds: [] as number[],
     });
 
@@ -163,7 +163,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 // Clear cached settings to ensure fresh data
                 localStorage.removeItem('paxyo_settings_cache');
                 localStorage.removeItem('paxyo_settings_timestamp');
-                
+
                 const settingsData = await api.getSettings(false);
                 console.log('Settings loaded:', settingsData);
                 _setSettings({
@@ -172,7 +172,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
                     holidayName: settingsData.holidayName || '',
                     maintenanceMode: settingsData.maintenanceMode || false,
                     userCanOrder: settingsData.userCanOrder !== false,
-                    marqueeText: settingsData.marqueeText || 'Welcome to Paxyo SMM!',
+                    marqueeText: settingsData.marqueeText || 'Welcome to primora444 SMM!',
                     topServicesIds: settingsData.topServicesIds || [],
                 });
                 // Set recommended IDs from settings
