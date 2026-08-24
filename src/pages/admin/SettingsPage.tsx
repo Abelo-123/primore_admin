@@ -52,8 +52,8 @@ export function SettingsPage() {
         <h3 className="settings-card__title">💱 Pricing Configuration</h3>
 
         <SettingRow
-          label="Rate Multiplier (USD → ETB)"
-          description={`Service prices from GodOfPanel are in USD. Converted to ETB by this multiplier. (Minimum allowed by Main Admin: ${settings.min_rate_multiplier || '55'})`}
+          label="Profit Margin Price Configuration"
+          description={`Profit margin multiplier applied to calculate final service pricing. (Minimum allowed by Main Admin: ${settings.min_rate_multiplier || '55'})`}
           type="number"
           value={settings.rate_multiplier}
           min={settings.min_rate_multiplier ? parseFloat(settings.min_rate_multiplier) : undefined}
