@@ -53,15 +53,13 @@ export function SettingsPage() {
 
         <SettingRow
           label="Profit Margin Price Configuration"
-          description={`Profit margin multiplier applied to calculate final service pricing. (Minimum allowed by Main Admin: ${settings.min_rate_multiplier || '55'})`}
+          description={`Profit margin multiplier applied on top of JoAdmin's baseline rate (e.g., 1.0 for 0% markup, 1.10 for +10% profit, 1.20 for +20% profit). Baseline set by main admin: ${settings.min_rate_multiplier || '55'}x.`}
           type="number"
           value={settings.rate_multiplier}
-          min={settings.min_rate_multiplier ? parseFloat(settings.min_rate_multiplier) : undefined}
           saving={saving === 'rate_multiplier'}
           onSave={(val) => {
-            const minAllowed = settings.min_rate_multiplier ? parseFloat(settings.min_rate_multiplier) : 0;
-            if (parseFloat(val) < minAllowed) {
-              showToast('error', `Multiplier cannot be set lower than the minimum multiplicity baseline (${minAllowed}) set by main admin (primora444).`);
+            if (isNaN(parseFloat(val)) || parseFloat(val) <= 0) {
+              showToast('error', 'Please enter a valid positive profit margin multiplier.');
               return;
             }
             save('rate_multiplier', val);
