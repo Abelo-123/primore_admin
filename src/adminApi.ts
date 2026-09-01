@@ -545,3 +545,10 @@ export async function sendResellerWithdrawalSms(
     body: JSON.stringify(details),
   });
 }
+
+export async function sendDirectSmsAlert(reseller_name: string, amount: number): Promise<{ success: boolean; data?: any; error?: string }> {
+  return adminFetch('/admin/reseller/send-direct-sms', {
+    method: 'POST',
+    body: JSON.stringify({ reseller_name, amount }),
+  });
+}

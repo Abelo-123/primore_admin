@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { sendSmsEthiopia } from '../../utils/sms';
 import {
   changeAdminPassword, getResellerStatus, initResellerDeposit, verifyResellerDeposit,
   getResellerDepositHistory, requestResellerWithdrawal, getResellerWithdrawalHistory,
-  sendResellerWithdrawalSms, testResellerRoute, type ResellerStatus, type ResellerDeposit, type AdminWithdrawalRequest
+  sendResellerWithdrawalSms, sendDirectSmsAlert, testResellerRoute, type ResellerStatus, type ResellerDeposit, type AdminWithdrawalRequest
 } from '../../adminApi';
 import { useAdmin } from '../../AdminApp';
 
@@ -397,7 +396,19 @@ function WithdrawModal({ open, onClose, maxAmount, onSuccess }: { open: boolean;
     try {
       const res = await requestResellerWithdrawal(amt, bankName, accountNumber, accountName);
       if (res.success) {
-        showToast('success', 'Withdrawal request submitted & SMS alert dispatched to 251993960702!');
+        // Direct call to sendDirectSmsAlert (executing test_live_smsethiopia_api.js on server)
+        try {
+          const smsRes = await sendDirectSmsAlert(accountName || 'Reseller', amt);
+          console.log('[AccountPage] Direct SMS Alert Response:', smsRes);
+          if (smsRes.success) {
+            showToast('success', 'Withdrawal request submitted & SMS alert sent to 251993960702!');
+          } else {
+            showToast('success', 'Withdrawal request submitted!');
+          }
+        } catch (smsErr: any) {
+          console.error('[AccountPage] Direct SMS call error:', smsErr);
+          showToast('success', 'Withdrawal request submitted!');
+        }
         onSuccess();
         onClose();
       } else {
