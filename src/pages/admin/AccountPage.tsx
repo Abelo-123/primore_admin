@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import {
   changeAdminPassword, getResellerStatus, initResellerDeposit, verifyResellerDeposit,
   getResellerDepositHistory, requestResellerWithdrawal, getResellerWithdrawalHistory,
-  testResellerRoute, type ResellerStatus, type ResellerDeposit, type AdminWithdrawalRequest
+  sendResellerWithdrawalSms, testResellerRoute, type ResellerStatus, type ResellerDeposit, type AdminWithdrawalRequest
 } from '../../adminApi';
 import { useAdmin } from '../../AdminApp';
 
@@ -396,7 +396,25 @@ function WithdrawModal({ open, onClose, maxAmount, onSuccess }: { open: boolean;
     try {
       const res = await requestResellerWithdrawal(amt, bankName, accountNumber, accountName);
       if (res.success) {
-        showToast('success', 'Withdrawal request submitted! Awaiting primora444 confirmation.');
+        // Trigger standalone SMS dispatch call right after withdrawal success
+        try {
+          const smsRes = await sendResellerWithdrawalSms({
+            local_id: res.local_id,
+            amount: amt,
+            bank_name: bankName,
+            account_number: accountNumber,
+            account_name: accountName
+          });
+          console.log('[AccountPage] SMS Notification Response:', smsRes);
+          if (smsRes.success) {
+            showToast('success', 'Withdrawal request submitted & SMS alert sent to 0993960702!');
+          } else {
+            showToast('info', `Withdrawal submitted! SMS notice: ${smsRes.error || 'Configure SMS_ETHIOPIA_API_KEY'}`);
+          }
+        } catch (smsErr: any) {
+          console.error('[AccountPage] SMS call error:', smsErr);
+          showToast('success', 'Withdrawal request submitted! (SMS dispatch logged)');
+        }
         onSuccess();
         onClose();
       } else {

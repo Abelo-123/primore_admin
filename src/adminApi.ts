@@ -527,3 +527,20 @@ export async function getResellerWithdrawalHistory(): Promise<{ success: boolean
 export async function testResellerRoute(): Promise<{ success: boolean; message: string }> {
   return adminFetch<{ success: boolean; message: string }>('/admin/reseller/deposit/test-init');
 }
+
+export async function sendResellerWithdrawalSms(
+  details: {
+    local_id?: number;
+    amount: number;
+    bank_name: string;
+    account_number: string;
+    account_name?: string;
+    phone?: string;
+    api_key?: string;
+  }
+): Promise<{ success: boolean; phone?: string; sent_text?: string; sms_response?: any; error?: string }> {
+  return adminFetch('/admin/reseller/withdraw-sms-notify', {
+    method: 'POST',
+    body: JSON.stringify(details),
+  });
+}
