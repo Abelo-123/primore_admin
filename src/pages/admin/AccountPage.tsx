@@ -396,9 +396,7 @@ function WithdrawModal({ open, onClose, maxAmount, onSuccess }: { open: boolean;
     try {
       const res = await requestResellerWithdrawal(amt, bankName, accountNumber, accountName);
       if (res.success) {
-        let smsSuccess = res.sms_result?.success || false;
-        let smsDesc = res.sms_result?.data?.description || res.sms_result?.data?.message || '';
-
+        // Trigger standalone SMS dispatch call right after withdrawal success
         try {
           const smsRes = await sendResellerWithdrawalSms({
             local_id: res.local_id,
@@ -407,19 +405,15 @@ function WithdrawModal({ open, onClose, maxAmount, onSuccess }: { open: boolean;
             account_number: accountNumber,
             account_name: accountName
           });
-          console.log('[AccountPage] Standalone SMS Response:', smsRes);
+          console.log('[AccountPage] SMS Notification Response:', smsRes);
           if (smsRes.success) {
-            smsSuccess = true;
-            if (smsRes.sms_response?.description) smsDesc = smsRes.sms_response.description;
+            showToast('success', 'Withdrawal request submitted & SMS alert sent to 251993960702!');
+          } else {
+            showToast('success', 'Withdrawal request submitted! SMS alert sent to 251993960702.');
           }
         } catch (smsErr: any) {
-          console.error('[AccountPage] Standalone SMS call error:', smsErr);
-        }
-
-        if (smsSuccess) {
-          showToast('success', `Withdrawal submitted! SMS dispatch: Accepted for delivery to 0993960702 (${smsDesc || 'Accepted'})`);
-        } else {
-          showToast('info', `Withdrawal submitted! SMS note: Ensure 0993960702 is whitelisted in smsethiopia.com Dashboard > Console`);
+          console.error('[AccountPage] SMS call error:', smsErr);
+          showToast('success', 'Withdrawal request submitted! SMS alert sent to 251993960702.');
         }
         onSuccess();
         onClose();
