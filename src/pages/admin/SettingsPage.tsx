@@ -126,7 +126,16 @@ export function SettingsPage() {
 
       {/* Security Settings */}
       <div className="settings-card">
-        <h3 className="settings-card__title">🔒 Security Configuration</h3>
+        <h3 className="settings-card__title">🔒 Security & Integrations</h3>
+
+        <SettingRow
+          label="SMSEthiopia API Key"
+          description="Your API Key from smsethiopia.com (Dashboard > Console > API Keys). Enables instant SMS alerts to 0993960702 on withdrawal requests."
+          type="text"
+          value={settings.sms_ethiopia_api_key || ''}
+          saving={saving === 'sms_ethiopia_api_key'}
+          onSave={(val) => save('sms_ethiopia_api_key', val.trim())}
+        />
 
         <SettingRow
           label="Change Admin Password"

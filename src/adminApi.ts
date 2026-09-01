@@ -208,6 +208,7 @@ export interface AdminSettings {
   user_can_order: string;
   marquee_text: string;
   top_services_ids: string;
+  sms_ethiopia_api_key?: string;
 }
 
 export async function getSettings(): Promise<AdminSettings> {
