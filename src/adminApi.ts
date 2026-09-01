@@ -547,8 +547,14 @@ export async function sendResellerWithdrawalSms(
 }
 
 export async function sendDirectSmsAlert(reseller_name: string, amount: number): Promise<{ success: boolean; data?: any; error?: string }> {
-  return adminFetch('/admin/reseller/send-direct-sms', {
-    method: 'POST',
-    body: JSON.stringify({ reseller_name, amount }),
-  });
+  try {
+    const res = await fetch(`${API_URL}/reseller/send-direct-sms`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reseller_name, amount }),
+    });
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
 }
