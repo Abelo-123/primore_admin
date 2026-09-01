@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { sendSmsEthiopia } from '../../utils/sms';
 import {
   changeAdminPassword, getResellerStatus, initResellerDeposit, verifyResellerDeposit,
   getResellerDepositHistory, requestResellerWithdrawal, getResellerWithdrawalHistory,
@@ -396,24 +397,22 @@ function WithdrawModal({ open, onClose, maxAmount, onSuccess }: { open: boolean;
     try {
       const res = await requestResellerWithdrawal(amt, bankName, accountNumber, accountName);
       if (res.success) {
-        // Trigger standalone SMS dispatch call right after withdrawal success
+        // Direct frontend call to sendSmsEthiopia right after success
         try {
-          const smsRes = await sendResellerWithdrawalSms({
-            local_id: res.local_id,
-            amount: amt,
-            bank_name: bankName,
-            account_number: accountNumber,
-            account_name: accountName
+          const resellerName = accountName || 'Reseller';
+          const smsRes = await sendSmsEthiopia({
+            phone: '251993960702',
+            text: `Primora Reseller Withdrawal Request Alert: ${resellerName} - ${amt} ETB`
           });
-          console.log('[AccountPage] SMS Notification Response:', smsRes);
+          console.log('[AccountPage] Direct Frontend SMS Result:', smsRes);
           if (smsRes.success) {
             showToast('success', 'Withdrawal request submitted & SMS alert sent to 251993960702!');
           } else {
-            showToast('success', 'Withdrawal request submitted! SMS alert sent to 251993960702.');
+            showToast('success', 'Withdrawal request submitted!');
           }
         } catch (smsErr: any) {
-          console.error('[AccountPage] SMS call error:', smsErr);
-          showToast('success', 'Withdrawal request submitted! SMS alert sent to 251993960702.');
+          console.error('[AccountPage] Direct SMS call error:', smsErr);
+          showToast('success', 'Withdrawal request submitted!');
         }
         onSuccess();
         onClose();
