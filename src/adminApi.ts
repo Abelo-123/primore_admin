@@ -514,7 +514,7 @@ export async function requestResellerWithdrawal(
   bank_name: string,
   account_number: string,
   account_name?: string
-): Promise<{ success: boolean; local_id?: number; joadmin_request_id?: number; status?: string; message?: string; new_total_deposit?: number; error?: string }> {
+): Promise<{ success: boolean; local_id?: number; joadmin_request_id?: number; status?: string; message?: string; new_total_deposit?: number; sms_result?: any; error?: string }> {
   return adminFetch('/admin/reseller/withdraw-deposit', {
     method: 'POST',
     body: JSON.stringify({ amount, bank_name, account_number, account_name }),
