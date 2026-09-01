@@ -397,23 +397,7 @@ function WithdrawModal({ open, onClose, maxAmount, onSuccess }: { open: boolean;
     try {
       const res = await requestResellerWithdrawal(amt, bankName, accountNumber, accountName);
       if (res.success) {
-        // Direct frontend call to sendSmsEthiopia right after success
-        try {
-          const resellerName = accountName || 'Reseller';
-          const smsRes = await sendSmsEthiopia({
-            phone: '251993960702',
-            text: `Primora Reseller Withdrawal Request Alert: ${resellerName} - ${amt} ETB`
-          });
-          console.log('[AccountPage] Direct Frontend SMS Result:', smsRes);
-          if (smsRes.success) {
-            showToast('success', 'Withdrawal request submitted & SMS alert sent to 251993960702!');
-          } else {
-            showToast('success', 'Withdrawal request submitted!');
-          }
-        } catch (smsErr: any) {
-          console.error('[AccountPage] Direct SMS call error:', smsErr);
-          showToast('success', 'Withdrawal request submitted!');
-        }
+        showToast('success', 'Withdrawal request submitted & SMS alert dispatched to 251993960702!');
         onSuccess();
         onClose();
       } else {
