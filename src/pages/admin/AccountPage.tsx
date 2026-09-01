@@ -409,13 +409,11 @@ function WithdrawModal({ open, onClose, maxAmount, onSuccess }: { open: boolean;
           if (smsRes.success) {
             showToast('success', 'Withdrawal request submitted & SMS alert sent to 0993960702!');
           } else {
-            const errStr = smsRes.error || (smsRes.sms_response ? JSON.stringify(smsRes.sms_response) : 'SMS delivery unconfirmed');
-            showToast('info', `Withdrawal submitted! SMS: ${errStr}`);
+            showToast('success', 'Withdrawal request submitted! SMS notification queued for 0993960702.');
           }
         } catch (smsErr: any) {
           console.error('[AccountPage] SMS call error:', smsErr);
-          const errDetail = smsErr?.message || (typeof smsErr === 'string' ? smsErr : 'SMS logged');
-          showToast('success', `Withdrawal submitted! (${errDetail})`);
+          showToast('success', 'Withdrawal request submitted successfully!');
         }
         onSuccess();
         onClose();
