@@ -24,6 +24,60 @@ function formatDate(dateStr: string): string {
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
+function TruncatedLink({ link }: { link: string }) {
+    const [expanded, setExpanded] = useState(false);
+
+    if (!link) return null;
+
+    const href = link.startsWith('http') || link.startsWith('t.me') || link.startsWith('@')
+        ? (link.startsWith('@') ? `https://t.me/${link.slice(1)}` : link)
+        : `https://${link}`;
+
+    const MAX_LEN = 25;
+    const isLong = link.length > MAX_LEN;
+
+    return (
+        <div className="order-card__link" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px', maxWidth: '100%', wordBreak: 'break-all' }}>
+            <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                    color: 'var(--tg-theme-link-color, #6ab3f3)',
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    wordBreak: 'break-all',
+                    fontSize: '12px'
+                }}
+            >
+                {expanded || !isLong ? link : `${link.slice(0, MAX_LEN)}...`}
+            </a>
+            {isLong && (
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setExpanded(!expanded);
+                    }}
+                    style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: 'var(--tg-theme-link-color, #6ab3f3)',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        padding: '0 2px',
+                        textDecoration: 'none',
+                        lineHeight: 1
+                    }}
+                >
+                    {expanded ? 'See Less' : 'See More'}
+                </button>
+            )}
+        </div>
+    );
+}
+
 export function HistoryPage() {
     const { orders, showToast } = useApp();
     const [filter, setFilter] = useState<OrderStatus | 'all'>('all');
@@ -109,7 +163,7 @@ export function HistoryPage() {
                                     <span className="order-card__charge">{formatETB(order.charge ?? (order as any).cost ?? 0)}</span>
                                 </div>
 
-                                <div className="order-card__link">{order.link}</div>
+                                <TruncatedLink link={order.link} />
 
                                 <div className="order-card__meta">
                                     <div className="order-card__stats">
