@@ -195,6 +195,26 @@ export async function getDeposits(page = 1, search = '', status = ''): Promise<{
   return adminFetch(`/admin/deposits?${params}`);
 }
 
+export async function updateDepositStatus(
+  depositId: number,
+  status: string,
+  updateBalance = false
+): Promise<{ success: boolean; old_status?: string; new_status?: string; new_balance?: number | null; message?: string }> {
+  return adminFetch('/admin/deposits/status', {
+    method: 'POST',
+    body: JSON.stringify({ deposit_id: depositId, status, update_balance: updateBalance }),
+  });
+}
+
+export async function resolveDeposit(
+  depositId: number,
+  action: 'completed' | 'failed'
+): Promise<{ success: boolean; status?: string; new_balance?: number; message?: string }> {
+  const status = action === 'completed' ? 'completed' : 'failed';
+  const updateBalance = action === 'completed';
+  return updateDepositStatus(depositId, status, updateBalance);
+}
+
 // ─── Settings ───────────────────────────────────────────────────
 
 export interface AdminSettings {
@@ -547,14 +567,8 @@ export async function sendResellerWithdrawalSms(
 }
 
 export async function sendDirectSmsAlert(reseller_name: string, amount: number): Promise<{ success: boolean; data?: any; error?: string }> {
-  try {
-    const res = await fetch(`${API_URL}/reseller/send-direct-sms`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reseller_name, amount }),
-    });
-    return await res.json();
-  } catch (err: any) {
-    return { success: false, error: err.message };
-  }
+  return adminFetch('/admin/reseller/send-direct-sms', {
+    method: 'POST',
+    body: JSON.stringify({ reseller_name, amount }),
+  });
 }
