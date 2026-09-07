@@ -265,12 +265,12 @@ export function DepositsPage() {
             <tr>
               <th>ID</th>
               <th>User</th>
-              <th>Amount</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th>Amount (ETB)</th>
               <th>Reference</th>
+              <th>Status</th>
               <th>Created</th>
               <th>Completed</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -312,7 +312,10 @@ export function DepositsPage() {
                     </div>
                   </td>
                   <td style={{ fontWeight: 600, color: 'var(--success)' }}>{Number(d.amount).toFixed(2)}</td>
+                  <td style={{ fontFamily: 'monospace', fontSize: 11 }}>{d.tx_ref}</td>
                   <td><StatusBadge status={d.status} /></td>
+                  <td style={{ color: 'var(--text-muted)', fontSize: 12 }}>{new Date(d.created_at).toLocaleString()}</td>
+                  <td style={{ color: 'var(--text-muted)', fontSize: 12 }}>{d.completed_at ? new Date(d.completed_at).toLocaleString() : '—'}</td>
                   <td>
                     <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                       {d.status === 'pending' && (
@@ -346,9 +349,6 @@ export function DepositsPage() {
                       </button>
                     </div>
                   </td>
-                  <td style={{ fontFamily: 'monospace', fontSize: 11 }}>{d.tx_ref}</td>
-                  <td style={{ color: 'var(--text-muted)', fontSize: 12 }}>{new Date(d.created_at).toLocaleString()}</td>
-                  <td style={{ color: 'var(--text-muted)', fontSize: 12 }}>{d.completed_at ? new Date(d.completed_at).toLocaleString() : '—'}</td>
                 </tr>
               );
             })}
