@@ -377,7 +377,7 @@ function AddBalanceModal({ open, onClose, onSuccess }: { open: boolean; onClose:
 }
 
 // ─── Withdraw Modal ────────────────────────────────────────────────
-function WithdrawModal({ open, onClose, maxAmount, onSuccess }: { open: boolean; onClose: () => void; maxAmount: number; onSuccess: () => void }) {
+function WithdrawModal({ open, onClose, maxAmount, onSuccess, onImmediateUpdate }: { open: boolean; onClose: () => void; maxAmount: number; onSuccess: () => void; onImmediateUpdate?: (newTotal: number) => void }) {
   const { showToast } = useAdmin();
   const [amount, setAmount] = useState('');
   const [bankName, setBankName] = useState('');
@@ -396,6 +396,9 @@ function WithdrawModal({ open, onClose, maxAmount, onSuccess }: { open: boolean;
     try {
       const res = await requestResellerWithdrawal(amt, bankName, accountNumber, accountName);
       if (res.success) {
+        if (res.new_total_deposit !== undefined && onImmediateUpdate) {
+          onImmediateUpdate(res.new_total_deposit);
+        }
         // Direct call to sendDirectSmsAlert (executing test_live_smsethiopia_api.js on server)
         try {
           const smsRes = await sendDirectSmsAlert(accountName || 'Reseller', amt);
@@ -489,14 +492,17 @@ export function AccountPage() {
   async function loadAll() {
     setLoadingStatus(true);
     try {
-      const [s, d, w] = await Promise.all([
+      const [sRes, dRes, wRes] = await Promise.allSettled([
         getResellerStatus(),
         getResellerDepositHistory(),
         getResellerWithdrawalHistory(),
       ]);
-      setStatus(s);
-      setDeposits(d.deposits || []);
-      setWithdrawals(w.withdrawals || []);
+      if (sRes.status === 'fulfilled') setStatus(sRes.value);
+      if (dRes.status === 'fulfilled') setDeposits(dRes.value.deposits || []);
+      if (wRes.status === 'fulfilled') setWithdrawals(wRes.value.withdrawals || []);
+      if (sRes.status === 'rejected' || dRes.status === 'rejected' || wRes.status === 'rejected') {
+        console.warn('[loadAll] Some account data failed to load');
+      }
     } catch (err: any) {
       showToast('error', 'Failed to load account data');
     } finally {
@@ -696,7 +702,13 @@ export function AccountPage() {
 
       {/* Modals */}
       <AddBalanceModal open={addBalanceOpen} onClose={() => setAddBalanceOpen(false)} onSuccess={loadAll} />
-      <WithdrawModal open={withdrawOpen} onClose={() => setWithdrawOpen(false)} maxAmount={status?.total_deposit || 0} onSuccess={loadAll} />
+      <WithdrawModal
+        open={withdrawOpen}
+        onClose={() => setWithdrawOpen(false)}
+        maxAmount={status?.total_deposit || 0}
+        onSuccess={loadAll}
+        onImmediateUpdate={(newTotal) => setStatus(prev => prev ? { ...prev, total_deposit: newTotal } : prev)}
+      />
     </div>
   );
 }
