@@ -58,11 +58,7 @@ export function HolidaysPage() {
       const res = await toggleHolidayStatus(h.id);
       if (res.success) {
         showToast('success', `${h.name} status updated to ${res.status.toUpperCase()}`);
-        setHolidays(prev =>
-          prev.map(item =>
-            item.id === h.id ? { ...item, status: res.status } : (res.status === 'active' ? { ...item, status: 'inactive' } : item)
-          )
-        );
+        await fetchHolidays();
       }
     } catch (err: any) {
       showToast('error', err.message || 'Failed to toggle status');
