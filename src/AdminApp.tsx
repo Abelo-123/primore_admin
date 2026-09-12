@@ -8,6 +8,7 @@ import { ServicesPage } from './pages/admin/ServicesPage';
 import { WithdrawalsPage } from './pages/admin/WithdrawalsPage';
 import { FinancePage } from './pages/admin/FinancePage';
 import { BroadcastPage } from './pages/admin/BroadcastPage';
+import { HolidaysPage } from './pages/admin/HolidaysPage';
 import { AccountPage } from './pages/admin/AccountPage';
 import { loginAdmin, logoutAdmin, isLoggedIn } from './adminApi';
 
