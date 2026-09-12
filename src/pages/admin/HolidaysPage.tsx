@@ -2,6 +2,22 @@ import { useState, useEffect } from 'react';
 import { getHolidays, saveHoliday, deleteHoliday, toggleHolidayStatus, seedHolidayPresets, type Holiday } from '../../adminApi';
 import { useAdmin } from '../../AdminApp';
 
+function formatDate(val: any): string {
+  if (!val) return 'Anytime';
+  if (typeof val === 'object' && val instanceof Date) {
+    return val.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+  const str = String(val).split('T')[0];
+  if (str === 'null' || str === 'undefined' || !str) return 'Anytime';
+  try {
+    const d = new Date(str + 'T00:00:00');
+    if (isNaN(d.getTime())) return str;
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch {
+    return str;
+  }
+}
+
 export function HolidaysPage() {
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,10 +40,13 @@ export function HolidaysPage() {
     try {
       setLoading(true);
       const data = await getHolidays();
-      if (data.success) {
-        setHolidays(data.holidays || []);
+      if (data && (data.success || Array.isArray((data as any).holidays))) {
+        setHolidays((data as any).holidays || []);
+      } else {
+        setHolidays([]);
       }
     } catch (err: any) {
+      console.error('[fetchHolidays error]', err);
       showToast('error', err.message || 'Failed to load holiday calendar');
     } finally {
       setLoading(false);
@@ -154,7 +173,7 @@ export function HolidaysPage() {
                 {activeHoliday.name}
               </h2>
               <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', margin: 0 }}>
-                {activeHoliday.start_date && activeHoliday.end_date ? `Valid from ${activeHoliday.start_date} to ${activeHoliday.end_date}` : 'Ongoing Special Discount'}
+                {activeHoliday.start_date && activeHoliday.end_date ? `Valid from ${formatDate(activeHoliday.start_date)} to ${formatDate(activeHoliday.end_date)}` : 'Ongoing Special Discount'}
               </p>
             </div>
           </div>
@@ -334,9 +353,9 @@ export function HolidaysPage() {
                   <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span>🗓️</span>
                     <span>
-                      {h.start_date ? new Date(h.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Anytime'}
+                      {formatDate(h.start_date)}
                       {' — '}
-                      {h.end_date ? new Date(h.end_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'End'}
+                      {formatDate(h.end_date)}
                     </span>
                   </div>
                 </div>
@@ -410,7 +429,7 @@ export function HolidaysPage() {
                   <div>
                     <div style={{ fontWeight: 700, fontSize: 14 }}>{h.name}</div>
                     <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
-                      {h.start_date} to {h.end_date}
+                      {formatDate(h.start_date)} to {formatDate(h.end_date)}
                     </div>
                   </div>
                 </div>
