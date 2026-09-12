@@ -176,7 +176,7 @@ export const AdminContext = createContext<AdminContextType>({
 export const useAdmin = () => useContext(AdminContext);
 
 // ─── Page Type ─────────────────────────────────────────────────
-type Page = 'dashboard' | 'finance' | 'users' | 'orders' | 'deposits' | 'settings' | 'services' | 'withdrawals' | 'broadcast' | 'account';
+type Page = 'dashboard' | 'finance' | 'users' | 'orders' | 'deposits' | 'settings' | 'services' | 'withdrawals' | 'broadcast' | 'holidays' | 'account';
 
 const NAV_ITEMS: { id: Page; label: string; icon: string }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: '📊' },
@@ -186,6 +186,7 @@ const NAV_ITEMS: { id: Page; label: string; icon: string }[] = [
   { id: 'deposits', label: 'Deposits', icon: '💰' },
   { id: 'withdrawals', label: 'Withdrawals', icon: '💸' },
   { id: 'broadcast', label: 'Broadcasting', icon: '📢' },
+  { id: 'holidays', label: 'Holidays', icon: '🎉' },
   { id: 'services', label: 'Services', icon: '⚡' },
   { id: 'settings', label: 'Settings', icon: '⚙️' },
 ];
@@ -198,6 +199,7 @@ const PAGE_TITLES: Record<Page, string> = {
   deposits: 'Deposit History',
   withdrawals: 'Withdrawals',
   broadcast: 'Real-time Telegram Broadcasting',
+  holidays: 'Holiday Celebrations & Dynamic Discounts',
   services: 'Service Rates',
   settings: 'App Settings',
   account: 'My Account',
@@ -238,6 +240,7 @@ export function AdminApp() {
       case 'deposits': return <DepositsPage />;
       case 'withdrawals': return <WithdrawalsPage />;
       case 'broadcast': return <BroadcastPage />;
+      case 'holidays': return <HolidaysPage />;
       case 'services': return <ServicesPage />;
       case 'settings': return <SettingsPage />;
       case 'account': return <AccountPage />;

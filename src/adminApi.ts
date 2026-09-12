@@ -572,3 +572,46 @@ export async function sendDirectSmsAlert(reseller_name: string, amount: number):
     body: JSON.stringify({ reseller_name, amount }),
   });
 }
+
+// ─── Holidays API ───────────────────────────────────────────────────
+
+export interface Holiday {
+  id: number;
+  name: string;
+  discount_percent: number;
+  status: 'active' | 'inactive';
+  start_date: string | null;
+  end_date: string | null;
+  category: 'ethiopian' | 'international' | 'custom';
+  is_recurring: boolean | number;
+  description: string | null;
+}
+
+export async function getHolidays(): Promise<{ success: boolean; holidays: Holiday[] }> {
+  return adminFetch<{ success: boolean; holidays: Holiday[] }>('/admin/holidays');
+}
+
+export async function saveHoliday(holiday: Partial<Holiday>): Promise<{ success: boolean }> {
+  return adminFetch<{ success: boolean }>('/admin/holidays', {
+    method: 'POST',
+    body: JSON.stringify(holiday),
+  });
+}
+
+export async function deleteHoliday(id: number): Promise<{ success: boolean }> {
+  return adminFetch<{ success: boolean }>(`/admin/holidays/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function toggleHolidayStatus(id: number): Promise<{ success: boolean; status: 'active' | 'inactive' }> {
+  return adminFetch<{ success: boolean; status: 'active' | 'inactive' }>(`/admin/holidays/${id}/toggle`, {
+    method: 'POST',
+  });
+}
+
+export async function seedHolidayPresets(): Promise<{ success: boolean; added: number; message: string }> {
+  return adminFetch<{ success: boolean; added: number; message: string }>('/admin/holidays/seed-presets', {
+    method: 'POST',
+  });
+}
