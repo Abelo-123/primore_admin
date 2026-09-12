@@ -53,7 +53,7 @@ export function SettingsPage() {
 
         <SettingRow
           label="Profit Margin Price Configuration"
-          description={`Profit margin multiplier applied on top of JoAdmin's baseline rate (e.g., 1.0 for 0% markup, 1.10 for +10% profit, 1.20 for +20% profit). Baseline set by main admin: ${settings.min_rate_multiplier || '55'}x.`}
+          description="Set your profit margin in percent. This directly determines how much profit you earn on every order."
           type="number"
           value={settings.rate_multiplier}
           saving={saving === 'rate_multiplier'}
