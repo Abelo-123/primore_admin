@@ -387,35 +387,35 @@ function WithdrawModal({ open, onClose, maxAmount, onSuccess, onImmediateUpdate 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const amt = parseFloat(amount);
-    if (!amt || amt <= 0) return showToast('error', 'Invalid amount');
-    if (amt > maxAmount) return showToast('error', `Cannot exceed Total Deposit: ${fmtETB(maxAmount)}`);
-    if (!bankName || !accountNumber) return showToast('error', 'Bank name and account number are required');
+
+    if (!amt || amt <= 0) {
+      return showToast('error', 'Invalid amount');
+    }
+
+    if (amt > maxAmount) {
+      return showToast('error', `Cannot exceed Total Deposit: ${fmtETB(maxAmount)}`);
+    }
+
+    if (!bankName || !accountNumber) {
+      return showToast('error', 'Bank name and account number are required');
+    }
 
     setLoading(true);
+
     try {
       const res = await requestResellerWithdrawal(amt, bankName, accountNumber, accountName);
+
       if (res.success) {
         if (res.new_total_deposit !== undefined && onImmediateUpdate) {
           onImmediateUpdate(res.new_total_deposit);
         }
-        // Direct call to sendDirectSmsAlert (executing test_live_smsethiopia_api.js on server)
-        try {
-          const smsRes = await sendDirectSmsAlert(accountName || 'Reseller', amt);
-          console.log('[AccountPage] Direct SMS Alert Response:', smsRes);
-          if (smsRes.success) {
-            showToast('success', 'Withdrawal request submitted & SMS alert sent to 251993960702!');
-          } else {
-            showToast('success', 'Withdrawal request submitted!');
-          }
-        } catch (smsErr: any) {
-          console.error('[AccountPage] Direct SMS call error:', smsErr);
-          showToast('success', 'Withdrawal request submitted!');
-        }
+
         onSuccess();
         onClose();
       } else {
-        showToast('error', res.error || 'Failed to submit withdrawal request');
+        showToast('error', res.error || 'Failed to submit withdrawal');
       }
     } catch (err: any) {
       showToast('error', err.message || 'Failed to submit withdrawal');
