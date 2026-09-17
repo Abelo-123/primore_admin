@@ -80,8 +80,8 @@ export function DashboardPage() {
               <th>ID</th>
               <th>User</th>
               <th>Service</th>
-              <th>Starting From</th>
-              <th>Link</th>
+              <th style={{ minWidth: 110 }}>Starting From</th>
+              <th style={{ minWidth: 140 }}>Link</th>
               <th>Quantity</th>
               <th>Cost (ETB)</th>
               <th>Status</th>

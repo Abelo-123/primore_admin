@@ -7,12 +7,28 @@ export function ExpandableLink({ url }: { url: string }) {
   const [expanded, setExpanded] = useState(false);
   if (!url) return <span>—</span>;
 
-  const isLong = url.length > 25;
-  const displayUrl = isLong && !expanded ? url.substring(0, 22) + '...' : url;
+  const isLong = url.length > 22;
+  const displayUrl = isLong && !expanded ? url.substring(0, 19) + '...' : url;
 
   return (
-    <div style={{ wordBreak: 'break-all', maxWidth: 220 }}>
-      <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+    <div style={{ minWidth: 120, maxWidth: 220, display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'nowrap' }}>
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        title={url}
+        style={{
+          color: 'var(--accent)',
+          textDecoration: 'none',
+          whiteSpace: expanded ? 'normal' : 'nowrap',
+          wordBreak: expanded ? 'break-all' : 'normal',
+          overflow: expanded ? 'visible' : 'hidden',
+          textOverflow: 'ellipsis',
+          display: 'inline-block',
+          maxWidth: expanded ? '100%' : 150,
+          verticalAlign: 'middle'
+        }}
+      >
         {displayUrl}
       </a>
       {isLong && (
@@ -20,18 +36,19 @@ export function ExpandableLink({ url }: { url: string }) {
           type="button"
           onClick={() => setExpanded(!expanded)}
           style={{
-            background: 'none',
+            background: 'rgba(99,102,241,0.15)',
             border: 'none',
             color: 'var(--accent)',
-            fontSize: 11,
+            fontSize: 10,
+            fontWeight: 600,
             cursor: 'pointer',
-            marginLeft: 6,
-            textDecoration: 'underline',
-            padding: 0,
-            lineHeight: 1
+            borderRadius: 4,
+            padding: '2px 6px',
+            whiteSpace: 'nowrap',
+            flexShrink: 0
           }}
         >
-          {expanded ? 'Less' : 'See More'}
+          {expanded ? 'Less' : 'More'}
         </button>
       )}
     </div>
@@ -92,8 +109,8 @@ export function OrdersPage() {
               <th>ID</th>
               <th>User</th>
               <th>Service ID</th>
-              <th>Starting From</th>
-              <th>Link</th>
+              <th style={{ minWidth: 110 }}>Starting From</th>
+              <th style={{ minWidth: 140 }}>Link</th>
               <th>Qty</th>
               <th>Cost (ETB)</th>
               <th>Status</th>
