@@ -194,7 +194,7 @@ const NAV_ITEMS: { id: Page; label: string; icon: string }[] = [
 
 const PAGE_TITLES: Record<Page, string> = {
   dashboard: 'Dashboard',
-  finance: 'Financial Overview',
+  finance: 'My Account',
   users: 'User Management',
   orders: 'Order History',
   deposits: 'Deposit History',
@@ -235,7 +235,7 @@ export function AdminApp() {
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard': return <DashboardPage />;
-      case 'finance': return <FinancePage />;
+      case 'finance': return <AccountPage />;
       case 'users': return <UsersPage />;
       case 'orders': return <OrdersPage />;
       case 'deposits': return <DepositsPage />;
