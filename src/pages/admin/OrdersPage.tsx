@@ -3,6 +3,41 @@ import { getOrders, type AdminOrder } from '../../adminApi';
 import { StatusBadge } from './DashboardPage';
 import { useAdmin } from '../../AdminApp';
 
+export function ExpandableLink({ url }: { url: string }) {
+  const [expanded, setExpanded] = useState(false);
+  if (!url) return <span>—</span>;
+
+  const isLong = url.length > 25;
+  const displayUrl = isLong && !expanded ? url.substring(0, 22) + '...' : url;
+
+  return (
+    <div style={{ wordBreak: 'break-all', maxWidth: 220 }}>
+      <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+        {displayUrl}
+      </a>
+      {isLong && (
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: 'var(--accent)',
+            fontSize: 11,
+            cursor: 'pointer',
+            marginLeft: 6,
+            textDecoration: 'underline',
+            padding: 0,
+            lineHeight: 1
+          }}
+        >
+          {expanded ? 'Less' : 'See More'}
+        </button>
+      )}
+    </div>
+  );
+}
+
 export function OrdersPage() {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [total, setTotal] = useState(0);
@@ -57,11 +92,11 @@ export function OrdersPage() {
               <th>ID</th>
               <th>User</th>
               <th>Service ID</th>
+              <th>Starting From</th>
               <th>Link</th>
               <th>Qty</th>
               <th>Cost (ETB)</th>
               <th>Status</th>
-              <th>Provider ID</th>
               <th>Date</th>
             </tr>
           </thead>
@@ -70,33 +105,41 @@ export function OrdersPage() {
               <tr><td colSpan={9} className="loading-center"><div className="spinner" /></td></tr>
             ) : orders.length === 0 ? (
               <tr><td colSpan={9} className="data-table-empty">No orders found</td></tr>
-            ) : orders.map(o => (
-              <tr key={o.id}>
-                <td>#{o.id}</td>
-                <td>
-                  <div
-                    className="user-info user-info--clickable"
-                    onClick={() => navigate('users', { search: o.user_id, highlightUserId: o.user_id })}
-                    title="Click to view user in User Management"
-                  >
-                    <div className="user-avatar">{(o.first_name || o.user_id)?.[0]?.toUpperCase() || '?'}</div>
-                    <div>
-                      <div className="user-info__name">{o.first_name || o.user_id}</div>
-                      {o.username && <div className="user-info__sub">@{o.username}</div>}
+            ) : orders.map(o => {
+              const displayId = o.provider_order_id || (o as any).api_order_id || o.id;
+              const linkUrl = o.target_link || (o as any).link || '';
+              return (
+                <tr key={o.id}>
+                  <td title={`Local DB ID: #${o.id}`} style={{ fontFamily: 'monospace', fontWeight: 600 }}>
+                    #{displayId}
+                  </td>
+                  <td>
+                    <div
+                      className="user-info user-info--clickable"
+                      onClick={() => navigate('users', { search: o.user_id, highlightUserId: o.user_id })}
+                      title="Click to view user in User Management"
+                    >
+                      <div className="user-avatar">{(o.first_name || o.user_id)?.[0]?.toUpperCase() || '?'}</div>
+                      <div>
+                        <div className="user-info__name">{o.first_name || o.user_id}</div>
+                        {o.username && <div className="user-info__sub">@{o.username}</div>}
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td>{o.service_id}</td>
-                <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  <a href={o.target_link} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>{o.target_link}</a>
-                </td>
-                <td>{o.quantity.toLocaleString()}</td>
-                <td style={{ fontWeight: 600 }}>{Number(o.cost ?? (o as any).charge ?? 0).toFixed(2)}</td>
-                <td><StatusBadge status={o.status} /></td>
-                <td style={{ fontFamily: 'monospace', fontSize: 11 }}>{o.provider_order_id || '—'}</td>
-                <td style={{ color: 'var(--text-muted)', fontSize: 12 }}>{new Date(o.created_at).toLocaleString()}</td>
-              </tr>
-            ))}
+                  </td>
+                  <td>{o.service_id}</td>
+                  <td style={{ fontWeight: 600, color: 'var(--text-muted)' }}>
+                    {o.start_count !== undefined && o.start_count !== null ? o.start_count.toLocaleString() : '—'}
+                  </td>
+                  <td>
+                    <ExpandableLink url={linkUrl} />
+                  </td>
+                  <td>{o.quantity.toLocaleString()}</td>
+                  <td style={{ fontWeight: 600 }}>{Number(o.cost ?? (o as any).charge ?? 0).toFixed(2)}</td>
+                  <td><StatusBadge status={o.status} /></td>
+                  <td style={{ color: 'var(--text-muted)', fontSize: 12 }}>{new Date(o.created_at).toLocaleString()}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

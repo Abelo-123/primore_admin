@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getDashboardStats, type DashboardStats } from '../../adminApi';
 import { useAdmin } from '../../AdminApp';
+import { ExpandableLink } from './OrdersPage';
 
 export function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -79,6 +80,8 @@ export function DashboardPage() {
               <th>ID</th>
               <th>User</th>
               <th>Service</th>
+              <th>Starting From</th>
+              <th>Link</th>
               <th>Quantity</th>
               <th>Cost (ETB)</th>
               <th>Status</th>
@@ -87,30 +90,42 @@ export function DashboardPage() {
           </thead>
           <tbody>
             {stats.recentOrders.length === 0 ? (
-              <tr><td colSpan={7} className="data-table-empty">No orders yet</td></tr>
-            ) : stats.recentOrders.map(o => (
-              <tr key={o.id}>
-                <td>#{o.id}</td>
-                <td>
-                  <div
-                    className="user-info user-info--clickable"
-                    onClick={() => navigate('users', { search: o.user_id, highlightUserId: o.user_id })}
-                    title="Click to view user in User Management"
-                  >
-                    <div className="user-avatar">{(o.first_name || o.user_id)?.[0]?.toUpperCase() || '?'}</div>
-                    <div>
-                      <div className="user-info__name">{o.first_name || o.user_id}</div>
-                      {o.username && <div className="user-info__sub">@{o.username}</div>}
+              <tr><td colSpan={9} className="data-table-empty">No orders yet</td></tr>
+            ) : stats.recentOrders.map(o => {
+              const displayId = o.provider_order_id || (o as any).api_order_id || o.id;
+              const linkUrl = o.target_link || (o as any).link || '';
+              return (
+                <tr key={o.id}>
+                  <td title={`Local DB ID: #${o.id}`} style={{ fontFamily: 'monospace', fontWeight: 600 }}>
+                    #{displayId}
+                  </td>
+                  <td>
+                    <div
+                      className="user-info user-info--clickable"
+                      onClick={() => navigate('users', { search: o.user_id, highlightUserId: o.user_id })}
+                      title="Click to view user in User Management"
+                    >
+                      <div className="user-avatar">{(o.first_name || o.user_id)?.[0]?.toUpperCase() || '?'}</div>
+                      <div>
+                        <div className="user-info__name">{o.first_name || o.user_id}</div>
+                        {o.username && <div className="user-info__sub">@{o.username}</div>}
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td>{o.service_id}</td>
-                <td>{o.quantity.toLocaleString()}</td>
-                <td>{Number(o.cost ?? (o as any).charge ?? 0).toFixed(2)}</td>
-                <td><StatusBadge status={o.status} /></td>
-                <td style={{ color: 'var(--text-muted)', fontSize: 12 }}>{new Date(o.created_at).toLocaleDateString()}</td>
-              </tr>
-            ))}
+                  </td>
+                  <td>{o.service_id}</td>
+                  <td style={{ fontWeight: 600, color: 'var(--text-muted)' }}>
+                    {o.start_count !== undefined && o.start_count !== null ? o.start_count.toLocaleString() : '—'}
+                  </td>
+                  <td>
+                    <ExpandableLink url={linkUrl} />
+                  </td>
+                  <td>{o.quantity.toLocaleString()}</td>
+                  <td>{Number(o.cost ?? (o as any).charge ?? 0).toFixed(2)}</td>
+                  <td><StatusBadge status={o.status} /></td>
+                  <td style={{ color: 'var(--text-muted)', fontSize: 12 }}>{new Date(o.created_at).toLocaleDateString()}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
