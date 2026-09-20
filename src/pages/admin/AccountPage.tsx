@@ -549,6 +549,7 @@ export function AccountPage() {
           ) : (
             <div style={{ fontSize: 26, fontWeight: 800, color: '#fff', marginBottom: 16 }}>{fmtETB(status?.reseller_balance || 0)}</div>
           )}
+
           <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 16 }}>Min multiplier: {status?.min_rate_multiplier || '—'}</div>
           <button
             onClick={() => setAddBalanceOpen(true)}
@@ -586,11 +587,6 @@ export function AccountPage() {
             <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>Your Rate Multiplier</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: '#6366f1' }}>{status.rate_multiplier}x</div>
           </div>
-          <div style={{ width: 1, height: 36, background: 'rgba(255,255,255,0.1)' }} />
-          <div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>Min Allowed (by joadmin)</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#a855f7' }}>{status.min_rate_multiplier}x</div>
-          </div>
           <div style={{ marginLeft: 'auto' }}>
             <button onClick={loadAll} style={{ background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.5)', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontSize: 13 }}>
               🔄 Refresh
@@ -598,6 +594,8 @@ export function AccountPage() {
           </div>
         </div>
       )}
+
+
 
       {/* ── Tabs ── */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, background: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: 4 }}>
