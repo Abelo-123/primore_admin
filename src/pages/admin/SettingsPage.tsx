@@ -66,14 +66,7 @@ export function SettingsPage() {
           }}
         />
 
-        <SettingRow
-          label="Discount Percent"
-          description="Global discount percentage applied to all orders. Set to 0 to disable."
-          type="number"
-          value={settings.discount_percent}
-          saving={saving === 'discount_percent'}
-          onSave={(val) => save('discount_percent', val)}
-        />
+
 
         <SettingRow
           label="Holiday / Promo Name"

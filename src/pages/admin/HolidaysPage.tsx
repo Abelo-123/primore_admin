@@ -174,17 +174,7 @@ export function HolidaysPage() {
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div style={{
-              background: 'rgba(34, 197, 94, 0.15)',
-              border: '1px solid rgba(34, 197, 94, 0.3)',
-              color: '#4ade80',
-              padding: '8px 16px',
-              borderRadius: 12,
-              fontSize: 18,
-              fontWeight: 800
-            }}>
-              {activeHoliday.discount_percent}% OFF
-            </div>
+            {/* Discount display removed */}
             <button
               className="btn btn--secondary btn--sm"
               onClick={() => handleToggleStatus(activeHoliday)}
